@@ -3,121 +3,107 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>D2C Strategy Dashboard</title>
+  <title>D2C Strategy Dashboard V3</title>
   <style>
     :root {
       --primary: #2c3e50; --accent: #3498db; --success: #27ae60;
-      --warning: #f39c12; --danger: #e74c3c; --bg: #f0f2f5; --card-bg: #ffffff;
+      --warning: #f39c12; --danger: #e74c3c; --bg: #f4f7f9; --card-bg: #ffffff;
     }
-    body { font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", sans-serif; background-color: var(--bg); color: var(--primary); margin: 0; padding: 20px; line-height: 1.6; }
+    body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: var(--bg); color: var(--primary); margin: 0; padding: 20px; font-size: 14px; }
     
-    /* Layout */
-    .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
-    header { grid-column: 1 / -1; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-    h1 { margin: 0; font-size: 24px; color: var(--primary); }
-
-    /* Cards */
-    .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 4px solid var(--accent); }
-    .card h3 { margin-top: 0; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .container { max-width: 1300px; margin: 0 auto; display: grid; grid-template-columns: 1fr 360px; gap: 20px; }
+    header { grid-column: 1 / -1; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
     
-    /* Input Styles */
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .card h3 { margin-top: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; color: var(--primary); }
+    .card-accent { border-top: 4px solid var(--accent); }
+    
+    /* 情報の強弱設定 */
+    .section-title { font-size: 12px; color: #7f8c8d; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+    
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
     .form-group { display: flex; flex-direction: column; }
-    .form-group label { font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
-    .form-group input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; text-align: right; }
-    .input-highlight { border-color: var(--accent) !important; background-color: #f7fbff; }
+    .form-group label { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #555; }
+    .form-group input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; text-align: right; }
 
-    /* Sidebar Summary */
     .sidebar { position: sticky; top: 20px; height: fit-content; }
-    .stat-card { text-align: center; padding: 15px; border-radius: 8px; margin-bottom: 10px; background: #fff; border: 1px solid #eef; }
-    .stat-card.primary { background-color: var(--primary); color: #fff; }
-    .stat-card.bep { border-left: 5px solid var(--warning); background: #fffdf5; }
-    .stat-label { font-size: 12px; opacity: 0.8; }
-    .stat-value { font-size: 22px; font-weight: bold; margin-top: 5px; }
+    .stat-card { background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #eee; }
+    .stat-card.main { background: var(--primary); color: #fff; }
+    .stat-val { font-size: 24px; font-weight: bold; display: block; margin-top: 5px; }
     
-    /* Buttons */
-    .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-    button { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; }
-    .btn-calc { background: var(--success); color: white; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); }
-    .btn-csv { background: #7f8c8d; color: white; }
-    button:hover { opacity: 0.9; transform: translateY(-1px); }
+    button { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; width: 100%; }
+    .btn-calc { background: var(--success); color: white; margin-bottom: 10px; font-size: 16px; }
+    .btn-csv { background: #eee; color: #333; }
 
-    /* Table Styles */
-    .table-wrapper { overflow-x: auto; margin-top: 10px; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    th, td { border: 1px solid #eee; padding: 10px; text-align: right; }
-    th { background: #f8f9fa; position: sticky; top: 0; }
-    .row-header { text-align: left; position: sticky; left: 0; background: #fff; z-index: 1; font-weight: bold; min-width: 120px; }
+    /* テーブル */
+    .table-wrapper { overflow-x: auto; background: #fff; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 900px; }
+    th, td { border: 1px solid #eee; padding: 8px; text-align: right; }
+    th { background: #f8f9fa; color: #666; font-weight: bold; }
+    .row-header { text-align: left; position: sticky; left: 0; background: #fff; font-weight: bold; z-index: 1; border-right: 2px solid #ddd; }
     .pos { color: var(--success); font-weight: bold; }
     .neg { color: var(--danger); font-weight: bold; }
 
-    /* Accordion */
-    details { background: #fff; border-radius: 12px; padding: 10px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 40px; }
-    summary { font-weight: bold; cursor: pointer; padding: 10px 0; color: var(--accent); }
+    .month-inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 5px; }
+    .m-box { background: #f9f9f9; padding: 4px; border-radius: 4px; border: 1px solid #eee; text-align: center; }
+    .m-box span { font-size: 9px; color: #999; }
+    .m-box input { width: 100%; border: none; background: transparent; text-align: center; font-weight: bold; }
 
-    /* Month Input Grid */
-    .month-inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; margin-top: 10px; }
-    .m-input-box { background: #f9f9f9; padding: 5px; border-radius: 4px; text-align: center; border: 1px solid #eee; }
-    .m-input-box span { font-size: 9px; color: #999; }
-    .m-input-box input { width: 100%; border: none; background: transparent; text-align: center; font-size: 13px; font-weight: bold; }
-
-    @media (max-width: 900px) {
-      .container { grid-template-columns: 1fr; }
-      .sidebar { position: static; }
-    }
+    details { background: #fff; border-radius: 8px; margin-bottom: 15px; border: 1px solid #eee; }
+    summary { padding: 15px; font-weight: bold; cursor: pointer; color: var(--accent); }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>📈 D2C Strategy Dashboard</h1>
-  <div id="quick-bep" style="font-weight: bold; color: var(--warning); background: #fff; padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-    投資回収まで: <span id="res_bep_top">-</span> ヶ月
+  <h1>📊 D2C経営シミュレーター</h1>
+  <div style="text-align: right;">
+    <span style="font-size: 12px; color: #7f8c8d;">投資回収予測:</span>
+    <span id="top_bep" style="font-size: 20px; font-weight: bold; color: var(--warning); ml-2">-</span> <small>ヶ月</small>
   </div>
 </header>
 
 <div class="container">
   <div class="main-content">
     
-    <div class="card">
-      <h3>🛒 商品・単価設定</h3>
+    <div class="section-title">おすすめ項目 (基本設定)</div>
+    <div class="card card-accent">
+      <h3>🛒 販売・単価・CPA</h3>
       <div class="form-grid">
-        <div class="form-group"><label>初回販売価格 (円)</label><input type="number" id="f_price" value="3000" class="input-highlight"></div>
-        <div class="form-group"><label>初回変動費 (円)</label><input type="number" id="f_cost" value="1600"></div>
-        <div class="form-group"><label>新規獲得CPA (円)</label><input type="number" id="cpa" value="5000" class="input-highlight"></div>
-        <div class="form-group"><label>CRM施策費 (売上の%)</label><input type="number" id="crm_rate" value="5"></div>
-        <div class="form-group"><label>定期販売価格 (円)</label><input type="number" id="r_price" value="5000"></div>
-        <div class="form-group"><label>定期変動費 (円)</label><input type="number" id="r_cost" value="1800"></div>
+        <div class="form-group"><label>初回販売価格(円)</label><input type="number" id="f_price" value="3000"></div>
+        <div class="form-group"><label>新規獲得CPA(円)</label><input type="number" id="cpa" value="5000"></div>
+        <div class="form-group"><label>2回目継続率(%)</label><input type="number" id="ret_2" value="82.0"></div>
+        <div class="form-group"><label>3回目継続率(%)</label><input type="number" id="ret_3" value="81.0"></div>
+        <div class="form-group"><label>定期販売価格(円)</label><input type="number" id="r_price" value="5000"></div>
       </div>
     </div>
 
-    <div class="card">
-      <h3>🔄 継続率設定 (前月比%)</h3>
-      <div class="form-grid">
-        <div class="form-group"><label>2回目</label><input type="number" id="ret_2" value="82.0"></div>
-        <div class="form-group"><label>3回目</label><input type="number" id="ret_3" value="81.0"></div>
-        <div class="form-group"><label>4回目</label><input type="number" id="ret_4" value="75.0"></div>
-        <div style="font-size: 11px; color:#999; align-self: flex-end; padding-bottom: 5px;">※5ヶ月以降は自動データ適用</div>
-      </div>
-    </div>
-
-    <div class="card" style="border-top-color: var(--success);">
-      <h3>📣 新規獲得計画 (1-24ヶ月)</h3>
-      <div style="margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 8px; font-size: 13px;">
-        基準人数: <input type="number" id="base_users" value="100" style="width:60px;">
-        <button onclick="applySameUsers()" style="background:#ddd; color:#333; padding:2px 8px; font-size:11px;">全月同一</button>
-        / 変動率: <input type="number" id="pct_change" value="0" style="width:40px;">%
-        <button onclick="applyPercentChange(1)" style="background:#ddd; color:#333; padding:2px 8px; font-size:11px;">加算</button>
-        <div style="margin-top:10px; font-weight: bold; color: var(--accent);">
-          <input type="checkbox" id="auto_fill_decay" checked> 
-          <label for="auto_fill_decay" style="cursor:pointer;">25ヶ月目以降も獲得を継続する（残存率に沿って減衰モデル）</label>
+    <details>
+      <summary>⚙️ 詳細設定（コスト・出荷数量・4回目以降）</summary>
+      <div style="padding: 0 15px 15px;">
+        <div class="form-grid">
+          <div class="form-group"><label>初回出荷数量(個/人)</label><input type="number" id="f_qty" value="1"></div>
+          <div class="form-group"><label>定期出荷数量(個/人)</label><input type="number" id="r_qty" value="1"></div>
+          <div class="form-group"><label>初回変動費(円/個)</label><input type="number" id="f_cost" value="1600"></div>
+          <div class="form-group"><label>定期変動費(円/個)</label><input type="number" id="r_cost" value="1800"></div>
+          <div class="form-group"><label>CRM費(売上の%)</label><input type="number" id="crm_rate" value="5"></div>
+          <div class="form-group"><label>4回目継続率(%)</label><input type="number" id="ret_4" value="75.0"></div>
         </div>
+      </div>
+    </details>
+
+    <div class="card card-accent">
+      <h3>📣 新規獲得人数 (1-24ヶ月)</h3>
+      <div style="margin-bottom: 10px; font-size: 12px; background: #f0f4f8; padding: 10px; border-radius: 8px;">
+        一括設定: <input type="number" id="base_users" value="100" style="width:60px; padding:3px;">
+        <button onclick="applySameUsers()" style="width:auto; padding:2px 10px; font-size:11px;">適用</button>
+        / 25ヶ月以降: <input type="checkbox" id="auto_decay" checked> <label for="auto_decay">減衰継続モデル</label>
       </div>
       <div class="month-inputs" id="months_container"></div>
     </div>
 
     <div class="card">
-      <h3>📅 年次収益サマリー</h3>
+      <h3>📈 おすすめ指標サマリー (年次)</h3>
       <div class="table-wrapper">
         <table id="yearly_table">
           <thead><tr><th class="row-header">項目</th><th>1年目</th><th>2年目</th><th>3年目</th><th>4年目</th><th>5年目</th></tr></thead>
@@ -126,163 +112,164 @@
       </div>
     </div>
 
+    <details>
+      <summary>🔍 詳細推移データを確認する (出荷数量・購入者数詳細)</summary>
+      <div class="table-wrapper" style="padding: 10px;">
+        <table id="monthly_table">
+          <thead><tr id="m_header"><th class="row-header">項目</th></tr></thead>
+          <tbody id="m_body"></tbody>
+        </table>
+      </div>
+    </details>
+
   </div>
 
   <div class="sidebar">
-    <div class="stat-card primary">
-      <div class="stat-label">5年目累計利益</div>
-      <div class="stat-value" id="res_y5_val">¥0</div>
-    </div>
-    <div class="stat-card bep">
-      <div class="stat-label">投資回収月 (BEP)</div>
-      <div class="stat-value" id="res_bep_side" style="color:var(--warning);">- ヶ月</div>
+    <div class="stat-card main">
+      <span class="stat-label">5年後 累計利益</span>
+      <span class="stat-val" id="res_y5">¥0</span>
     </div>
     <div class="stat-card">
-      <div class="stat-label">1年目利益率</div>
-      <div class="stat-value" id="rate_y1_side">-%</div>
+      <span class="stat-label">累計新規客数 (5年)</span>
+      <span class="stat-val" id="res_total_users">0人</span>
     </div>
     <div class="stat-card">
-      <div class="stat-label">3年目利益率</div>
-      <div class="stat-value" id="rate_y3_side">-%</div>
+      <span class="stat-label">投資回収 (BEP)</span>
+      <span class="stat-val" id="res_bep" style="color: var(--warning);">未回収</span>
     </div>
-
-    <div class="btn-group">
-      <button class="btn-calc" onclick="calculate()">シミュレーション実行</button>
-      <button class="btn-csv" onclick="downloadCSV()">CSV結果をダウンロード</button>
-    </div>
+    
+    <button class="btn-calc" onclick="calculate()">シミュレーション実行</button>
+    <button class="btn-csv" onclick="downloadCSV()">CSV保存</button>
   </div>
 </div>
 
-<details>
-  <summary>🔍 月次詳細データを確認する (24ヶ月分)</summary>
-  <div class="table-wrapper">
-    <table id="monthly_table">
-      <thead><tr id="m_header"><th class="row-header">項目</th></tr></thead>
-      <tbody id="m_body"></tbody>
-    </table>
-  </div>
-</details>
-
 <script>
-// 60ヶ月継続率
-const masterRetention = [100, 82, 81, 75, 85, 95, 95.25, 95.5, 95.75, 96, 96.25, 96.5, 95.76, 95.02, 94.28, 93.54, 92.8, 92.06, 91.41, 90.75, 90.1, 89.44, 88.79, 88.13, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.57, 91.57, 91.57, 91.58, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5];
+const masterRet = [100, 82, 81, 75, 85, 95, 95.25, 95.5, 95.75, 96, 96.25, 96.5, 95.76, 95.02, 94.28, 93.54, 92.8, 92.06, 91.41, 90.75, 90.1, 89.44, 88.79, 88.13, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.57, 91.57, 91.57, 91.58, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5];
 
 const container = document.getElementById('months_container');
 const m_header = document.getElementById('m_header');
 for(let i=1; i<=24; i++){
-  container.innerHTML += `<div class="m-input-box"><span>${i}月</span><input type="number" class="m-val" id="m${i}" value="100"></div>`;
+  container.innerHTML += `<div class="m-box"><span>${i}月</span><input type="number" class="m-val" id="m${i}" value="100"></div>`;
   m_header.innerHTML += `<th>${i}月</th>`;
 }
 
-function applySameUsers(){ document.querySelectorAll('.m-val').forEach(el => el.value = document.getElementById('base_users').value); }
-function applyPercentChange(s){
-  let cur = parseFloat(document.getElementById('base_users').value);
-  const p = parseFloat(document.getElementById('pct_change').value)/100;
-  document.querySelectorAll('.m-val').forEach((el, i) => { if(i>0) cur *= (1 + p*s); el.value = Math.round(cur); });
+function applySameUsers(){
+  const v = document.getElementById('base_users').value;
+  document.querySelectorAll('.m-val').forEach(el => el.value = v);
 }
 
 function calculate(){
-  const f_p = Number(document.getElementById('f_price').value), f_c = Number(document.getElementById('f_cost').value), cpa = Number(document.getElementById('cpa').value);
-  const r_p = Number(document.getElementById('r_price').value), r_c = Number(document.getElementById('r_cost').value), crm_p = Number(document.getElementById('crm_rate').value)/100;
+  // 入力取得
+  const f_p = Number(document.getElementById('f_price').value), f_q = Number(document.getElementById('f_qty').value);
+  const r_p = Number(document.getElementById('r_price').value), r_q = Number(document.getElementById('r_qty').value);
+  const cpa = Number(document.getElementById('cpa').value), f_c = Number(document.getElementById('f_cost').value), r_c = Number(document.getElementById('r_cost').value);
+  const crm = Number(document.getElementById('crm_rate').value) / 100;
   
-  let curRet = [...masterRetention];
-  curRet[1] = Number(document.getElementById('ret_2').value); curRet[2] = Number(document.getElementById('ret_3').value); curRet[3] = Number(document.getElementById('ret_4').value);
-  
-  // 1-24ヶ月の新規獲得
+  let curRet = [...masterRet];
+  curRet[1] = Number(document.getElementById('ret_2').value);
+  curRet[2] = Number(document.getElementById('ret_3').value);
+  curRet[3] = Number(document.getElementById('ret_4').value);
+
   let newUsers = [];
-  let sum24 = 0;
+  let totalNewUsers = 0;
   for(let i=1; i<=24; i++){
     let val = Number(document.getElementById(`m${i}`).value);
-    newUsers.push(val);
-    sum24 += val;
+    newUsers.push(val); totalNewUsers += val;
   }
-  let avgNew = sum24 / 24;
-  let isAutoDecay = document.getElementById('auto_fill_decay').checked;
-
-  // 25-60ヶ月の新規獲得計算（減衰モデル）
+  
+  const avgNew = totalNewUsers / 24;
+  const isDecay = document.getElementById('auto_decay').checked;
   for(let m=25; m<=60; m++){
-    if(isAutoDecay){
-      // 24ヶ月目の数値をベースに、それ以降の残存率( masterRetention[m-1] )に応じて減衰させる
-      let val = avgNew * (curRet[Math.min(m-1, 59)] / 100);
-      newUsers.push(val);
-    } else {
-      newUsers.push(0);
-    }
+    let val = isDecay ? avgNew * (curRet[Math.min(m-1, 59)]/100) : 0;
+    newUsers.push(val); totalNewUsers += val;
   }
 
-  let tRev = 0, tProf = 0, bep = 0;
-  let yearly = Array.from({length: 5}, () => ({rev: 0, prof: 0}));
+  let cumNew = 0, cumShip = 0, cumProf = 0, bep = 0;
+  let yearly = Array.from({length: 5}, () => ({rev: 0, prof: 0, new: 0, ship: 0}));
   let monthlyLog = [];
 
   for(let m=0; m<60; m++){
     let curNew = newUsers[m], curRep = 0;
     for(let p=0; p<m; p++){
       let surv = newUsers[p];
-      for(let s=1; s<=(m-p); s++){ surv *= (curRet[Math.min(s, 59)] / 100); }
+      for(let s=1; s<=(m-p); s++){ surv *= (curRet[Math.min(s, 59)]/100); }
       curRep += surv;
     }
-    let rev = (curNew * f_p) + (curRep * r_p), cost = (curNew * f_c) + (curRep * r_c), ad = curNew * cpa, crm = rev * crm_p, prof = rev - cost - ad - crm;
-    tRev += rev; tProf += prof;
-    if(tProf > 0 && bep === 0) bep = m + 1;
-    yearly[Math.floor(m / 12)].rev += rev; yearly[Math.floor(m / 12)].prof += prof;
-    if(m < 24) monthlyLog.push({ new: curNew, rep: curRep, rev: rev, prof: prof, cum: tProf });
-  }
 
-  // UI反映
-  const fmt = n => Math.round(n).toLocaleString();
-  document.getElementById('res_bep_top').innerText = bep > 0 ? bep : "-";
-  document.getElementById('res_bep_side').innerText = bep > 0 ? bep + " ヶ月" : "未回収";
-  
-  const updateSummary = (y, cid, rid) => {
-    let cr = 0, cp = 0; for(let i=0; i<y; i++){ cr += yearly[i].rev; cp += yearly[i].prof; }
-    if(cid) document.getElementById(cid).innerText = "¥" + fmt(cp);
-    if(rid) document.getElementById(rid).innerText = (cr > 0 ? (cp/cr*100).toFixed(1) : 0) + "%";
-  };
-  updateSummary(5, 'res_y5_val', null); updateSummary(1, null, 'rate_y1_side'); updateSummary(3, null, 'rate_y3_side');
+    let shipQty = (curNew * f_q) + (curRep * r_q);
+    let rev = (curNew * f_p) + (curRep * r_p);
+    let cost = (curNew * f_q * f_c) + (curRep * r_q * r_c);
+    let prof = rev - cost - (curNew * cpa) - (rev * crm);
 
-  // テーブル描画
-  let yHtml = ""; const yLabels = ["累計売上", "累計損益", "利益率"];
-  for(let i=0; i<3; i++){
-    yHtml += `<tr><td class="row-header">${yLabels[i]}</td>`;
-    let cr = 0, cp = 0;
-    for(let y=0; y<5; y++){
-      cr += yearly[y].rev; cp += yearly[y].prof;
-      if(i===0) yHtml += `<td>¥${fmt(cr)}</td>`;
-      else if(i===1) yHtml += `<td class="${cp>=0?'pos':'neg'}">¥${fmt(cp)}</td>`;
-      else yHtml += `<td>${cr>0?(cp/cr*100).toFixed(1):0}%</td>`;
+    cumNew += curNew; cumShip += shipQty; cumProf += prof;
+    if(cumProf > 0 && bep === 0) bep = m + 1;
+
+    let yIdx = Math.floor(m/12);
+    yearly[yIdx].rev += rev; yearly[yIdx].prof += prof;
+    yearly[yIdx].new += curNew; yearly[yIdx].ship += shipQty;
+
+    if(m < 24){
+      monthlyLog.push({ new: curNew, rep: curRep, buyTotal: curNew + curRep, ship: shipQty, rev: rev, prof: prof, cumProf: cumProf, cumNew: cumNew, cumShip: cumShip });
     }
-    yHtml += `</tr>`;
   }
-  document.getElementById('yearly_body').innerHTML = yHtml;
 
-  let mHtml = ""; const mKeys = ["new", "rep", "rev", "prof", "cum"];
-  const mLabels = ["新規客数", "リピート数", "売上高", "単月損益", "累計損益"];
+  // 表示更新
+  document.getElementById('res_y5').innerText = "¥" + Math.round(cumProf).toLocaleString();
+  document.getElementById('res_total_users').innerText = Math.round(cumNew).toLocaleString() + "人";
+  document.getElementById('res_bep').innerText = bep > 0 ? bep + " ヶ月" : "未回収";
+  document.getElementById('top_bep').innerText = bep > 0 ? bep : "-";
+
+  // 年次テーブル
+  let yBody = "";
+  const yLabels = ["累計売上", "累計利益", "累計新規購入者", "累計商品出荷数", "利益率"];
+  for(let i=0; i<5; i++){
+    yBody += `<tr><td class="row-header">${yLabels[i]}</td>`;
+    let cR=0, cP=0, cN=0, cS=0;
+    for(let y=0; y<5; y++){
+      cR += yearly[y].rev; cP += yearly[y].prof; cN += yearly[y].new; cS += yearly[y].ship;
+      if(i===0) yBody += `<td>¥${Math.round(cR).toLocaleString()}</td>`;
+      else if(i===1) yBody += `<td class="${cP>=0?'pos':'neg'}">¥${Math.round(cP).toLocaleString()}</td>`;
+      else if(i===2) yBody += `<td>${Math.round(cN).toLocaleString()}人</td>`;
+      else if(i===3) yBody += `<td>${Math.round(cS).toLocaleString()}個</td>`;
+      else yBody += `<td>${(cR>0?cP/cR*100:0).toFixed(1)}%</td>`;
+    }
+    yBody += `</tr>`;
+  }
+  document.getElementById('yearly_body').innerHTML = yBody;
+
+  // 詳細月次テーブル
+  let mBody = "";
+  const mLabels = ["新規購入者数", "リピート購入者数", "単月購入者合計", "単月出荷数量", "累計新規購入者数", "累計出荷数量", "単月損益", "累計損益"];
+  const mKeys = ["new", "rep", "buyTotal", "ship", "cumNew", "cumShip", "prof", "cumProf"];
   mKeys.forEach((key, idx) => {
-    mHtml += `<tr><td class="row-header">${mLabels[idx]}</td>`;
+    mBody += `<tr><td class="row-header">${mLabels[idx]}</td>`;
     monthlyLog.forEach(log => {
-      let cls = (key==='prof'||key==='cum') && log[key]<0 ? 'neg' : (key==='prof'||key==='cum' ? 'pos' : '');
-      mHtml += `<td class="${cls}">${key==='new'||key==='rep' ? fmt(log[key]) : '¥'+fmt(log[key])}</td>`;
+      let v = Math.round(log[key]);
+      let txt = (key==='prof'||key==='cumProf') ? "¥"+v.toLocaleString() : v.toLocaleString();
+      let cls = (key==='prof'||key==='cumProf') && v < 0 ? "neg" : ((key==='prof'||key==='cumProf') ? "pos" : "");
+      mBody += `<td class="${cls}">${txt}</td>`;
     });
-    mHtml += `</tr>`;
+    mBody += `</tr>`;
   });
-  document.getElementById('m_body').innerHTML = mHtml;
+  document.getElementById('m_body').innerHTML = mBody;
 }
 
 function downloadCSV() {
   const getD = id => {
     let rs = [];
     document.getElementById(id).querySelectorAll('tr').forEach(tr => {
-      let r = []; tr.querySelectorAll('th, td').forEach(td => r.push('"' + td.innerText.replace(/,/g,"").replace(/¥/g,"") + '"'));
+      let r = []; tr.querySelectorAll('th, td').forEach(td => r.push('"' + td.innerText.replace(/,/g,"").replace(/¥/g,"").replace(/人/g,"").replace(/個/g,"") + '"'));
       rs.push(r.join(","));
     });
     return rs;
   };
-  let csv = ["--- Summary ---"].concat(getD('yearly_table')).concat(["", "--- Monthly Details ---"]).concat(getD('monthly_table')).join("\r\n");
+  let csv = ["--- SUMMARY ---"].concat(getD('yearly_table')).concat(["", "--- DETAILS ---"]).concat(getD('monthly_table')).join("\r\n");
   const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv' });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "d2c_sim_result.csv"; a.click();
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "d2c_report.csv"; a.click();
 }
 
 window.onload = calculate;
 </script>
+
 </body>
 </html>
