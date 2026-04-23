@@ -2,133 +2,175 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>D2C 5カ年利益シミュレーター (CSV出力版)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D2C Strategy Dashboard</title>
   <style>
-    :root { --primary: #3498db; --success: #27ae60; --warning: #e67e22; --danger: #e74c3c; --secondary: #95a5a6; --bg: #f4f7f9; }
-    body { font-family: "Helvetica Neue", Arial, sans-serif; padding: 20px; background-color: var(--bg); color: #333; line-height: 1.5; }
-    h1, h2, h3 { color: #2c3e50; border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-top: 30px; }
+    :root {
+      --primary: #2c3e50; --accent: #3498db; --success: #27ae60;
+      --warning: #f39c12; --danger: #e74c3c; --bg: #f0f2f5; --card-bg: #ffffff;
+    }
+    body { font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", sans-serif; background-color: var(--bg); color: var(--primary); margin: 0; padding: 20px; line-height: 1.6; }
     
-    .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 30px; }
-    .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; border-top: 5px solid var(--primary); }
-    .card h4 { margin: 0 0 10px 0; color: #7f8c8d; font-size: 13px; text-transform: uppercase; }
-    .card .value { font-size: 22px; font-weight: bold; color: #2c3e50; }
-    .card .sub-value { font-size: 14px; color: #95a5a6; margin-top: 5px; }
-    .bep-card { border-top-color: var(--warning); background-color: #fff9f4; }
-    .bep-value { color: var(--warning) !important; font-size: 32px !important; }
+    /* Layout */
+    .container { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+    header { grid-column: 1 / -1; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    h1 { margin: 0; font-size: 24px; color: var(--primary); }
 
-    .grid { display: flex; gap: 20px; flex-wrap: wrap; }
-    .box { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; flex: 1; min-width: 300px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .form-group { margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-    .form-group label { font-size: 13px; font-weight: bold; }
-    .form-group input { width: 100px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; text-align: right; font-family: monospace; }
+    /* Cards */
+    .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 4px solid var(--accent); }
+    .card h3 { margin-top: 0; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
     
-    .button-group { text-align: center; margin: 40px 0; display: flex; justify-content: center; gap: 20px; }
-    button { padding: 12px 24px; color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; font-size: 18px; transition: 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    .btn-calc { background-color: var(--success); }
-    .btn-csv { background-color: var(--secondary); font-size: 16px; }
-    button:hover { opacity: 0.9; transform: translateY(-2px); }
+    /* Input Styles */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-size: 12px; font-weight: bold; color: #7f8c8d; margin-bottom: 4px; }
+    .form-group input { padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; text-align: right; }
+    .input-highlight { border-color: var(--accent) !important; background-color: #f7fbff; }
 
-    .table-container { background: #fff; padding: 20px; border-radius: 8px; overflow-x: auto; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 30px; }
-    table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 800px; }
-    th, td { border: 1px solid #eee; padding: 12px 8px; text-align: right; }
-    th { background-color: #f8f9fa; color: #666; }
-    .row-header { text-align: left; font-weight: bold; background-color: #fdfdfd !important; position: sticky; left: 0; z-index: 10; border-right: 2px solid #ddd; }
-    .profit-pos { color: var(--primary); font-weight: bold; }
-    .profit-neg { color: var(--danger); font-weight: bold; }
+    /* Sidebar Summary */
+    .sidebar { position: sticky; top: 20px; height: fit-content; }
+    .stat-card { text-align: center; padding: 15px; border-radius: 8px; margin-bottom: 10px; background: #fff; border: 1px solid #eef; }
+    .stat-card.primary { background-color: var(--primary); color: #fff; }
+    .stat-card.bep { border-left: 5px solid var(--warning); background: #fffdf5; }
+    .stat-label { font-size: 12px; opacity: 0.8; }
+    .stat-value { font-size: 22px; font-weight: bold; margin-top: 5px; }
     
-    .months-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-top: 15px; }
-    .month-input-box { background: #f8f9fa; padding: 8px; border-radius: 4px; border: 1px solid #eee; text-align: center; }
-    .month-input-box span { font-size: 10px; color: #888; display: block; margin-bottom: 4px; }
-    .month-input-box input { width: 100%; box-sizing: border-box; text-align: right; padding: 4px; border: 1px solid #ccc; }
+    /* Buttons */
+    .btn-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    button { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; }
+    .btn-calc { background: var(--success); color: white; box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); }
+    .btn-csv { background: #7f8c8d; color: white; }
+    button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+    /* Table Styles */
+    .table-wrapper { overflow-x: auto; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { border: 1px solid #eee; padding: 10px; text-align: right; }
+    th { background: #f8f9fa; position: sticky; top: 0; }
+    .row-header { text-align: left; position: sticky; left: 0; background: #fff; z-index: 1; font-weight: bold; min-width: 120px; }
+    .pos { color: var(--success); font-weight: bold; }
+    .neg { color: var(--danger); font-weight: bold; }
+
+    /* Accordion */
+    details { background: #fff; border-radius: 12px; padding: 10px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 40px; }
+    summary { font-weight: bold; cursor: pointer; padding: 10px 0; color: var(--accent); }
+
+    /* Month Input Grid */
+    .month-inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; margin-top: 10px; }
+    .m-input-box { background: #f9f9f9; padding: 5px; border-radius: 4px; text-align: center; border: 1px solid #eee; }
+    .m-input-box span { font-size: 9px; color: #999; }
+    .m-input-box input { width: 100%; border: none; background: transparent; text-align: center; font-size: 13px; font-weight: bold; }
+
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+    }
   </style>
 </head>
 <body>
 
-<h1>D2C 5ヶ年利益シミュレーター</h1>
+<header>
+  <h1>📈 D2C Strategy Dashboard</h1>
+  <div id="quick-bep" style="font-weight: bold; color: var(--warning); background: #fff; padding: 8px 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    投資回収まで: <span id="res_bep_top">-</span> ヶ月
+  </div>
+</header>
 
-<div class="dashboard">
-  <div class="card bep-card">
-    <h4>投資回収月 (BEP)</h4>
-    <div class="value bep-value" id="res_bep">- ヶ月</div>
-    <div class="sub-value">累計損益がプラスになる月</div>
+<div class="container">
+  <div class="main-content">
+    
+    <div class="card">
+      <h3>🛒 商品・単価設定</h3>
+      <div class="form-grid">
+        <div class="form-group"><label>初回販売価格 (円)</label><input type="number" id="f_price" value="3000" class="input-highlight"></div>
+        <div class="form-group"><label>初回変動費 (円)</label><input type="number" id="f_cost" value="1600"></div>
+        <div class="form-group"><label>新規獲得CPA (円)</label><input type="number" id="cpa" value="5000" class="input-highlight"></div>
+        <div class="form-group"><label>CRM施策費 (売上の%)</label><input type="number" id="crm_rate" value="5"></div>
+        <div class="form-group"><label>定期販売価格 (円)</label><input type="number" id="r_price" value="5000"></div>
+        <div class="form-group"><label>定期変動費 (円)</label><input type="number" id="r_cost" value="1800"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>🔄 継続率設定 (前月比%)</h3>
+      <div class="form-grid">
+        <div class="form-group"><label>2回目</label><input type="number" id="ret_2" value="82.0"></div>
+        <div class="form-group"><label>3回目</label><input type="number" id="ret_3" value="81.0"></div>
+        <div class="form-group"><label>4回目</label><input type="number" id="ret_4" value="75.0"></div>
+        <div style="font-size: 11px; color:#999; align-self: flex-end; padding-bottom: 5px;">※5ヶ月以降は自動データ適用</div>
+      </div>
+    </div>
+
+    <div class="card" style="border-top-color: var(--success);">
+      <h3>📣 新規獲得計画 (1-24ヶ月)</h3>
+      <div style="margin-bottom: 15px; background: #f8f9fa; padding: 10px; border-radius: 8px; font-size: 13px;">
+        基準人数: <input type="number" id="base_users" value="100" style="width:60px;">
+        <button onclick="applySameUsers()" style="background:#ddd; color:#333; padding:2px 8px; font-size:11px;">全月同一</button>
+        / 変動率: <input type="number" id="pct_change" value="0" style="width:40px;">%
+        <button onclick="applyPercentChange(1)" style="background:#ddd; color:#333; padding:2px 8px; font-size:11px;">加算</button>
+        <div style="margin-top:10px; font-weight: bold; color: var(--accent);">
+          <input type="checkbox" id="auto_fill_decay" checked> 
+          <label for="auto_fill_decay" style="cursor:pointer;">25ヶ月目以降も獲得を継続する（残存率に沿って減衰モデル）</label>
+        </div>
+      </div>
+      <div class="month-inputs" id="months_container"></div>
+    </div>
+
+    <div class="card">
+      <h3>📅 年次収益サマリー</h3>
+      <div class="table-wrapper">
+        <table id="yearly_table">
+          <thead><tr><th class="row-header">項目</th><th>1年目</th><th>2年目</th><th>3年目</th><th>4年目</th><th>5年目</th></tr></thead>
+          <tbody id="yearly_body"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
-  <div class="card">
-    <h4>1年目累計損益</h4>
-    <div class="value" id="res_y1">-</div>
-    <div class="sub-value" id="rate_y1">利益率: -%</div>
-  </div>
-  <div class="card">
-    <h4>3年目累計損益</h4>
-    <div class="value" id="res_y3">-</div>
-    <div class="sub-value" id="rate_y3">利益率: -%</div>
-  </div>
-  <div class="card">
-    <h4>5年目累計損益</h4>
-    <div class="value" id="res_y5">-</div>
-    <div class="sub-value" id="rate_y5">利益率: -%</div>
+
+  <div class="sidebar">
+    <div class="stat-card primary">
+      <div class="stat-label">5年目累計利益</div>
+      <div class="stat-value" id="res_y5_val">¥0</div>
+    </div>
+    <div class="stat-card bep">
+      <div class="stat-label">投資回収月 (BEP)</div>
+      <div class="stat-value" id="res_bep_side" style="color:var(--warning);">- ヶ月</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">1年目利益率</div>
+      <div class="stat-value" id="rate_y1_side">-%</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">3年目利益率</div>
+      <div class="stat-value" id="rate_y3_side">-%</div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn-calc" onclick="calculate()">シミュレーション実行</button>
+      <button class="btn-csv" onclick="downloadCSV()">CSV結果をダウンロード</button>
+    </div>
   </div>
 </div>
 
-<div class="grid">
-  <div class="box">
-    <h3>基本単価・コスト設定</h3>
-    <div class="form-group"><label>初回販売価格 (円):</label><input type="number" id="f_price" value="3000"></div>
-    <div class="form-group"><label>初回変動費 (原価+送料等):</label><input type="number" id="f_cost" value="1600"></div>
-    <div class="form-group"><label>新規獲得CPA (円):</label><input type="number" id="cpa" value="5000"></div>
-    <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-    <div class="form-group"><label>定期販売価格 (円):</label><input type="number" id="r_price" value="5000"></div>
-    <div class="form-group"><label>定期変動費 (原価+送料等):</label><input type="number" id="r_cost" value="1800"></div>
-    <div class="form-group"><label>CRM施策費 (売上の%):</label><input type="number" id="crm_rate" value="5" step="0.1"></div>
+<details>
+  <summary>🔍 月次詳細データを確認する (24ヶ月分)</summary>
+  <div class="table-wrapper">
+    <table id="monthly_table">
+      <thead><tr id="m_header"><th class="row-header">項目</th></tr></thead>
+      <tbody id="m_body"></tbody>
+    </table>
   </div>
-
-  <div class="box">
-    <h3>リピート継続率設定 (前月比)</h3>
-    <div class="form-group"><label>2回目継続率 (%):</label><input type="number" id="ret_2" value="82.0" step="0.1"></div>
-    <div class="form-group"><label>3回目継続率 (%):</label><input type="number" id="ret_3" value="81.0" step="0.1"></div>
-    <div class="form-group"><label>4回目継続率 (%):</label><input type="number" id="ret_4" value="75.0" step="0.1"></div>
-    <p style="font-size: 11px; color:#999; margin-top:15px;">※5ヶ月目以降は自動適用</p>
-  </div>
-</div>
-
-<div class="box" style="margin-top:20px;">
-  <h3>新規獲得人数 (1〜24ヶ月目)</h3>
-  <div style="margin-bottom: 10px; background:#f0f4f8; padding:10px; border-radius:6px; font-size:13px;">
-    基準: <input type="number" id="base_users" value="100" style="width:60px;">
-    <button onclick="applySameUsers()" style="background:var(--secondary); font-size:12px; padding:5px 10px;">全月同一</button>
-    変動率: <input type="number" id="pct_change" value="0" style="width:40px;"> %
-    <button onclick="applyPercentChange(1)" style="background:var(--secondary); font-size:12px; padding:5px 10px;">加算</button>
-  </div>
-  <div class="months-grid" id="months_container"></div>
-</div>
-
-<div class="button-group">
-  <button class="btn-calc" onclick="calculate()">シミュレーションを実行</button>
-  <button class="btn-csv" onclick="downloadCSV()">CSVで結果を保存</button>
-</div>
-
-<div class="table-container">
-  <h3>年次決算サマリー</h3>
-  <table id="yearly_table">
-    <thead><tr><th class="row-header">項目</th><th>1年目累計</th><th>2年目累計</th><th>3年目累計</th><th>4年目累計</th><th>5年目累計</th></tr></thead>
-    <tbody id="yearly_body"></tbody>
-  </table>
-</div>
-
-<div class="table-container">
-  <h3>月次詳細推移 (24ヶ月分)</h3>
-  <table id="monthly_table">
-    <thead><tr id="m_header"><th class="row-header">項目</th></tr></thead>
-    <tbody id="m_body"></tbody>
-  </table>
-</div>
+</details>
 
 <script>
+// 60ヶ月継続率
 const masterRetention = [100, 82, 81, 75, 85, 95, 95.25, 95.5, 95.75, 96, 96.25, 96.5, 95.76, 95.02, 94.28, 93.54, 92.8, 92.06, 91.41, 90.75, 90.1, 89.44, 88.79, 88.13, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.57, 91.57, 91.57, 91.58, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5];
 
 const container = document.getElementById('months_container');
 const m_header = document.getElementById('m_header');
 for(let i=1; i<=24; i++){
-  container.innerHTML += `<div class="month-input-box"><span>${i}月</span><input type="number" class="m-val" id="m${i}" value="100"></div>`;
+  container.innerHTML += `<div class="m-input-box"><span>${i}月</span><input type="number" class="m-val" id="m${i}" value="100"></div>`;
   m_header.innerHTML += `<th>${i}月</th>`;
 }
 
@@ -136,16 +178,38 @@ function applySameUsers(){ document.querySelectorAll('.m-val').forEach(el => el.
 function applyPercentChange(s){
   let cur = parseFloat(document.getElementById('base_users').value);
   const p = parseFloat(document.getElementById('pct_change').value)/100;
-  document.querySelectorAll('.m-val').forEach((el, idx) => { if(idx > 0) cur *= (1 + p * s); el.value = Math.round(cur); });
+  document.querySelectorAll('.m-val').forEach((el, i) => { if(i>0) cur *= (1 + p*s); el.value = Math.round(cur); });
 }
 
 function calculate(){
   const f_p = Number(document.getElementById('f_price').value), f_c = Number(document.getElementById('f_cost').value), cpa = Number(document.getElementById('cpa').value);
-  const r_p = Number(document.getElementById('r_price').value), r_c = Number(document.getElementById('r_cost').value), crm_p = Number(document.getElementById('crm_rate').value) / 100;
+  const r_p = Number(document.getElementById('r_price').value), r_c = Number(document.getElementById('r_cost').value), crm_p = Number(document.getElementById('crm_rate').value)/100;
+  
   let curRet = [...masterRetention];
   curRet[1] = Number(document.getElementById('ret_2').value); curRet[2] = Number(document.getElementById('ret_3').value); curRet[3] = Number(document.getElementById('ret_4').value);
   
-  let newUsers = []; for(let i=1; i<=60; i++){ let inputEl = document.getElementById(`m${i}`); newUsers.push(inputEl ? Number(inputEl.value) : 0); }
+  // 1-24ヶ月の新規獲得
+  let newUsers = [];
+  let sum24 = 0;
+  for(let i=1; i<=24; i++){
+    let val = Number(document.getElementById(`m${i}`).value);
+    newUsers.push(val);
+    sum24 += val;
+  }
+  let avgNew = sum24 / 24;
+  let isAutoDecay = document.getElementById('auto_fill_decay').checked;
+
+  // 25-60ヶ月の新規獲得計算（減衰モデル）
+  for(let m=25; m<=60; m++){
+    if(isAutoDecay){
+      // 24ヶ月目の数値をベースに、それ以降の残存率( masterRetention[m-1] )に応じて減衰させる
+      let val = avgNew * (curRet[Math.min(m-1, 59)] / 100);
+      newUsers.push(val);
+    } else {
+      newUsers.push(0);
+    }
+  }
+
   let tRev = 0, tProf = 0, bep = 0;
   let yearly = Array.from({length: 5}, () => ({rev: 0, prof: 0}));
   let monthlyLog = [];
@@ -164,71 +228,58 @@ function calculate(){
     if(m < 24) monthlyLog.push({ new: curNew, rep: curRep, rev: rev, prof: prof, cum: tProf });
   }
 
-  document.getElementById('res_bep').innerText = bep > 0 ? bep + " ヶ月" : "未回収";
-  const setCard = (y, cid, rid) => {
-    let cR = 0, cP = 0; for(let i=0; i<y; i++){ cR += yearly[i].rev; cP += yearly[i].prof; }
-    document.getElementById(cid).innerText = "¥" + Math.round(cP).toLocaleString();
-    document.getElementById(cid).className = "value " + (cP >= 0 ? "profit-pos" : "profit-neg");
-    document.getElementById(rid).innerText = "利益率: " + (cR > 0 ? (cP/cR*100).toFixed(1) : 0) + "%";
+  // UI反映
+  const fmt = n => Math.round(n).toLocaleString();
+  document.getElementById('res_bep_top').innerText = bep > 0 ? bep : "-";
+  document.getElementById('res_bep_side').innerText = bep > 0 ? bep + " ヶ月" : "未回収";
+  
+  const updateSummary = (y, cid, rid) => {
+    let cr = 0, cp = 0; for(let i=0; i<y; i++){ cr += yearly[i].rev; cp += yearly[i].prof; }
+    if(cid) document.getElementById(cid).innerText = "¥" + fmt(cp);
+    if(rid) document.getElementById(rid).innerText = (cr > 0 ? (cp/cr*100).toFixed(1) : 0) + "%";
   };
-  setCard(1, 'res_y1', 'rate_y1'); setCard(3, 'res_y3', 'rate_y3'); setCard(5, 'res_y5', 'rate_y5');
+  updateSummary(5, 'res_y5_val', null); updateSummary(1, null, 'rate_y1_side'); updateSummary(3, null, 'rate_y3_side');
 
-  let yBody = ""; const yLabels = ["累計売上高", "累計損益", "累計利益率"];
+  // テーブル描画
+  let yHtml = ""; const yLabels = ["累計売上", "累計損益", "利益率"];
   for(let i=0; i<3; i++){
-    yBody += `<tr><td class="row-header">${yLabels[i]}</td>`;
+    yHtml += `<tr><td class="row-header">${yLabels[i]}</td>`;
     let cr = 0, cp = 0;
     for(let y=0; y<5; y++){
       cr += yearly[y].rev; cp += yearly[y].prof;
-      if(i===0) yBody += `<td>¥${Math.round(cr).toLocaleString()}</td>`;
-      else if(i===1) yBody += `<td class="${cp>=0?'profit-pos':'profit-neg'}">¥${Math.round(cp).toLocaleString()}</td>`;
-      else yBody += `<td>${cr>0?(cp/cr*100).toFixed(1):0}%</td>`;
+      if(i===0) yHtml += `<td>¥${fmt(cr)}</td>`;
+      else if(i===1) yHtml += `<td class="${cp>=0?'pos':'neg'}">¥${fmt(cp)}</td>`;
+      else yHtml += `<td>${cr>0?(cp/cr*100).toFixed(1):0}%</td>`;
     }
-    yBody += `</tr>`;
+    yHtml += `</tr>`;
   }
-  document.getElementById('yearly_body').innerHTML = yBody;
+  document.getElementById('yearly_body').innerHTML = yHtml;
 
-  let mBody = ""; const mLabels = ["新規客数", "リピート客数", "月間売上高", "単月損益", "累計損益"];
-  const mKeys = ["new", "rep", "rev", "prof", "cum"];
+  let mHtml = ""; const mKeys = ["new", "rep", "rev", "prof", "cum"];
+  const mLabels = ["新規客数", "リピート数", "売上高", "単月損益", "累計損益"];
   mKeys.forEach((key, idx) => {
-    mBody += `<tr><td class="row-header">${mLabels[idx]}</td>`;
+    mHtml += `<tr><td class="row-header">${mLabels[idx]}</td>`;
     monthlyLog.forEach(log => {
-      let val = Math.round(log[key]).toLocaleString();
-      let cls = (key === 'prof' || key === 'cum') && log[key] < 0 ? "profit-neg" : (key === 'prof' || key === 'cum' ? "profit-pos" : "");
-      mBody += `<td class="${cls}">${key.includes('new') || key.includes('rep') ? val + "人" : "¥" + val}</td>`;
+      let cls = (key==='prof'||key==='cum') && log[key]<0 ? 'neg' : (key==='prof'||key==='cum' ? 'pos' : '');
+      mHtml += `<td class="${cls}">${key==='new'||key==='rep' ? fmt(log[key]) : '¥'+fmt(log[key])}</td>`;
     });
-    mBody += `</tr>`;
+    mHtml += `</tr>`;
   });
-  document.getElementById('m_body').innerHTML = mBody;
+  document.getElementById('m_body').innerHTML = mHtml;
 }
 
 function downloadCSV() {
-  const getTableData = (id) => {
-    const table = document.getElementById(id);
-    let rows = [];
-    table.querySelectorAll('tr').forEach(tr => {
-      let row = [];
-      tr.querySelectorAll('th, td').forEach(td => {
-        let text = td.innerText.replace(/,/g, "").replace(/¥/g, "").replace(/人/g, ""); // カンマ・記号を除去
-        row.push('"' + text + '"');
-      });
-      rows.push(row.join(","));
+  const getD = id => {
+    let rs = [];
+    document.getElementById(id).querySelectorAll('tr').forEach(tr => {
+      let r = []; tr.querySelectorAll('th, td').forEach(td => r.push('"' + td.innerText.replace(/,/g,"").replace(/¥/g,"") + '"'));
+      rs.push(r.join(","));
     });
-    return rows;
+    return rs;
   };
-
-  let csvContent = ["--- 年次サマリー ---"].concat(getTableData('yearly_table'))
-                  .concat(["", "--- 月次詳細 ---"])
-                  .concat(getTableData('monthly_table'))
-                  .join("\r\n");
-
-  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-  const blob = new Blob([bom, csvContent], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.download = "d2c_simulation_result.csv";
-  a.href = url;
-  a.click();
-  URL.revokeObjectURL(url);
+  let csv = ["--- Summary ---"].concat(getD('yearly_table')).concat(["", "--- Monthly Details ---"]).concat(getD('monthly_table')).join("\r\n");
+  const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv' });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "d2c_sim_result.csv"; a.click();
 }
 
 window.onload = calculate;
