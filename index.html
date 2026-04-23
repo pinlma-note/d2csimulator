@@ -11,41 +11,34 @@
     }
     body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: var(--bg); color: var(--primary); margin: 0; padding: 15px; font-size: 14px; }
     
-    /* ヘッダー周り */
     header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: 10px; flex-wrap: wrap; gap: 10px; }
     h1 { margin: 0; font-size: 20px; }
     
-    /* 大枠のレイアウト (PC/iPad横向き用) */
     .container { max-width: 1300px; margin: 0 auto; display: flex; align-items: flex-start; gap: 20px; }
-    .main-content { flex: 1; min-width: 0; /* min-width:0 はGrid/Flex内でのテーブルはみ出し防止に必須 */ }
+    .main-content { flex: 1; min-width: 0; }
     .sidebar { flex: 0 0 340px; position: sticky; top: 20px; }
     
-    /* カード・グループ */
     .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
     .card h3 { margin-top: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; }
     .card-accent { border-top: 4px solid var(--accent); }
     .section-title { font-size: 12px; color: #7f8c8d; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
     
-    /* フォーム (iOSズーム防止のためfont-size: 16px以上必須) */
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
     .form-group { display: flex; flex-direction: column; }
     .form-group label { font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #555; }
-    .form-group input { padding: 10px 8px; border: 1px solid #ccc; border-radius: 6px; text-align: right; font-size: 16px; /* 16px for iOS */ box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+    .form-group input { padding: 10px 8px; border: 1px solid #ccc; border-radius: 6px; text-align: right; font-size: 16px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
 
-    /* サイドバー・サマリー */
     .sidebar-grid { display: flex; flex-direction: column; gap: 10px; }
     .stat-card { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #eee; text-align: center; }
     .stat-card.main { background: var(--primary); color: #fff; border: none; }
     .stat-label { font-size: 12px; opacity: 0.9; }
     .stat-val { font-size: 24px; font-weight: bold; display: block; margin-top: 5px; }
     
-    /* ボタン (タップしやすく大きく) */
     button { padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; width: 100%; font-size: 16px; }
     .btn-calc { background: var(--success); color: white; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(39,174,96,0.3); }
     .btn-csv { background: #e0e6ed; color: #333; }
     button:hover { opacity: 0.9; transform: translateY(-1px); }
 
-    /* テーブル (スマホ横スクロール対応) */
     .table-wrapper { overflow-x: auto; background: #fff; border-radius: 8px; -webkit-overflow-scrolling: touch; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 600px; white-space: nowrap; }
     th, td { border: 1px solid #eee; padding: 10px 8px; text-align: right; }
@@ -54,7 +47,6 @@
     .pos { color: var(--success); font-weight: bold; }
     .neg { color: var(--danger); font-weight: bold; }
 
-    /* 月次入力グリッド */
     .month-inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 6px; }
     .m-box { background: #f9f9f9; padding: 6px; border-radius: 4px; border: 1px solid #ddd; text-align: center; }
     .m-box span { font-size: 10px; color: #777; display: block; margin-bottom: 2px;}
@@ -64,11 +56,7 @@
     summary { padding: 15px; font-weight: bold; cursor: pointer; color: var(--accent); font-size: 15px; }
     summary:hover { background: #f8f9fa; }
 
-    /* ========== レスポンシブ・メディアクエリ ========== */
-    
-    /* iPad縦・スマホ向け (横幅 900px以下) */
     @media (max-width: 900px) {
-      /* コンテナを縦並びにし、サイドバー(結果)を上に持ってくる */
       .container { flex-direction: column-reverse; }
       .sidebar { position: static; width: 100%; flex: none; }
       .sidebar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -77,10 +65,9 @@
       .card { padding: 15px; }
     }
 
-    /* iPhone等の小さいスマホ向け (横幅 480px以下) */
     @media (max-width: 480px) {
-      .form-grid { grid-template-columns: 1fr; } /* 入力欄を1列にする */
-      .month-inputs { grid-template-columns: repeat(4, 1fr); } /* 4列に固定して見やすく */
+      .form-grid { grid-template-columns: 1fr; } 
+      .month-inputs { grid-template-columns: repeat(4, 1fr); } 
       h1 { font-size: 18px; }
       .stat-val { font-size: 20px; }
     }
@@ -223,7 +210,7 @@ function calculate(){
     newUsers.push(val); totalNewUsers += val;
   }
 
-  let cumNew = 0, cumShip = 0, cumProf = 0, bep = 0;
+  let cumNew = 0, cumShip = 0, cumRev = 0, cumProf = 0, bep = 0;
   let yearly = Array.from({length: 5}, () => ({rev: 0, prof: 0, new: 0, ship: 0}));
   let monthlyLog = [];
 
@@ -240,7 +227,7 @@ function calculate(){
     let cost = (curNew * f_q * f_c) + (curRep * r_q * r_c);
     let prof = rev - cost - (curNew * cpa) - (rev * crm);
 
-    cumNew += curNew; cumShip += shipQty; cumProf += prof;
+    cumNew += curNew; cumShip += shipQty; cumRev += rev; cumProf += prof;
     if(cumProf > 0 && bep === 0) bep = m + 1;
 
     let yIdx = Math.floor(m/12);
@@ -248,7 +235,10 @@ function calculate(){
     yearly[yIdx].new += curNew; yearly[yIdx].ship += shipQty;
 
     if(m < 24){
-      monthlyLog.push({ new: curNew, rep: curRep, buyTotal: curNew + curRep, ship: shipQty, rev: rev, prof: prof, cumProf: cumProf, cumNew: cumNew, cumShip: cumShip });
+      monthlyLog.push({ 
+        new: curNew, rep: curRep, buyTotal: curNew + curRep, ship: shipQty, 
+        cumNew: cumNew, cumShip: cumShip, rev: rev, cumRev: cumRev, prof: prof, cumProf: cumProf 
+      });
     }
   }
 
@@ -275,13 +265,13 @@ function calculate(){
   document.getElementById('yearly_body').innerHTML = yBody;
 
   let mBody = "";
-  const mLabels = ["新規購入者数", "リピート購入者数", "単月購入者合計", "単月出荷数量", "累計新規購入者数", "累計出荷数量", "単月損益", "累計損益"];
-  const mKeys = ["new", "rep", "buyTotal", "ship", "cumNew", "cumShip", "prof", "cumProf"];
+  const mLabels = ["新規購入者数", "リピート購入者数", "単月購入者合計", "単月出荷数量", "累計新規購入者数", "累計出荷数量", "単月売上", "累計売上", "単月損益", "累計損益"];
+  const mKeys = ["new", "rep", "buyTotal", "ship", "cumNew", "cumShip", "rev", "cumRev", "prof", "cumProf"];
   mKeys.forEach((key, idx) => {
     mBody += `<tr><td class="row-header">${mLabels[idx]}</td>`;
     monthlyLog.forEach(log => {
       let v = Math.round(log[key]);
-      let txt = (key==='prof'||key==='cumProf') ? "¥"+v.toLocaleString() : v.toLocaleString();
+      let txt = (key==='prof'||key==='cumProf'||key==='rev'||key==='cumRev') ? "¥"+v.toLocaleString() : v.toLocaleString();
       let cls = (key==='prof'||key==='cumProf') && v < 0 ? "neg" : ((key==='prof'||key==='cumProf') ? "pos" : "");
       mBody += `<td class="${cls}">${txt}</td>`;
     });
