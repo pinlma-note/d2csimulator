@@ -2,26 +2,36 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>D2C 利益シミュレーション</title>
+  <title>D2C 利益シミュレーター</title>
   <style>
-    body { font-family: "Helvetica Neue", Arial, sans-serif; padding: 20px; background-color: #f9f9f9;}
-    h1, h3 { color: #333; }
+    body { font-family: "Helvetica Neue", Arial, sans-serif; padding: 20px; background-color: #f9f9f9; color: #333; }
+    h1, h3 { color: #333; border-bottom: 2px solid #ccc; padding-bottom: 5px;}
     .grid { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
     .box { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; width: 320px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .full-width { width: 100%; }
+    .full-width { width: 100%; box-sizing: border-box; }
     .form-group { margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     .form-group label { font-size: 14px; }
-    .form-group input { width: 120px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; text-align: right; }
-    button { padding: 8px 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-bottom: 15px;}
-    button:hover { background-color: #0056b3; }
+    .form-group input { width: 100px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; text-align: right; }
+    button { padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-bottom: 15px; font-weight: bold;}
+    button:hover { background-color: #218838; }
+    .btn-small { background-color: #007bff; padding: 5px 10px; font-size: 12px; font-weight: normal; margin-bottom: 0;}
+    .btn-small:hover { background-color: #0056b3; }
     .months-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
-    .month-box { background: #f1f1f1; padding: 10px; border-radius: 4px; text-align: center; }
-    .month-box input { width: 70px; text-align: right; margin-top: 5px; }
+    .month-box { background: #f1f1f1; padding: 10px; border-radius: 4px; text-align: center; width: 80px;}
+    .month-box input { width: 60px; text-align: right; margin-top: 5px; }
+    
+    /* 結果テーブルのスタイル */
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; font-size: 14px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+    th { background-color: #f4f4f4; text-align: center; }
+    .row-header { text-align: left; font-weight: bold; background-color: #fafafa; }
+    .profit-positive { color: blue; font-weight: bold; }
+    .profit-negative { color: red; font-weight: bold; }
   </style>
 </head>
 <body>
 
-<h1>D2C 利益シミュレーションアプリ</h1>
+<h1>D2C 利益シミュレーター</h1>
 
 <div class="grid">
   <div class="box">
@@ -33,39 +43,73 @@
     <div class="form-group"><label>手数料等 (円):</label><input type="number" id="f_fee" value="300"></div>
     <div class="form-group"><label>その他 (円):</label><input type="number" id="f_other" value="0"></div>
     <div class="form-group"><label>商品点数:</label><input type="number" id="f_items" value="1"></div>
+    <hr>
+    <div class="form-group"><label>広告CPA (円):</label><input type="number" id="cpa" value="5000"></div>
   </div>
 
   <div class="box">
     <h3>定期（2回目以降）設定</h3>
-    <button onclick="copyToRegular()">ワンクリックで初回と同一にする</button>
-    <div class="form-group"><label>価格 (円):</label><input type="number" id="r_price" value="0"></div>
-    <div class="form-group"><label>原価 (円):</label><input type="number" id="r_cost" value="0"></div>
-    <div class="form-group"><label>送料 (円):</label><input type="number" id="r_shipping" value="0"></div>
-    <div class="form-group"><label>保管料 (円):</label><input type="number" id="r_storage" value="0"></div>
-    <div class="form-group"><label>手数料等 (円):</label><input type="number" id="r_fee" value="0"></div>
+    <button class="btn-small" onclick="copyToRegular()">ワンクリックで初回と同一にする</button>
+    <div style="margin-top: 10px;"></div>
+    <div class="form-group"><label>価格 (円):</label><input type="number" id="r_price" value="5000"></div>
+    <div class="form-group"><label>原価 (円):</label><input type="number" id="r_cost" value="800"></div>
+    <div class="form-group"><label>送料 (円):</label><input type="number" id="r_shipping" value="500"></div>
+    <div class="form-group"><label>保管料 (円):</label><input type="number" id="r_storage" value="50"></div>
+    <div class="form-group"><label>手数料等 (円):</label><input type="number" id="r_fee" value="500"></div>
     <div class="form-group"><label>その他 (円):</label><input type="number" id="r_other" value="0"></div>
     <div class="form-group"><label>商品点数:</label><input type="number" id="r_items" value="1"></div>
+    <hr>
+    <div class="form-group"><label>平均継続率 (%):</label><input type="number" id="retention" value="60"></div>
   </div>
 </div>
 
 <div class="box full-width">
   <h3>新規獲得人数（月別）</h3>
-  <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+  <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px; flex-wrap: wrap;">
     <label>基準人数:</label><input type="number" id="base_users" value="100" style="width: 80px; padding: 5px;">
-    <button onclick="applySameUsers()">ワンクリックで全月同一</button>
+    <button class="btn-small" onclick="applySameUsers()">全月同一にする</button>
     
     <label style="margin-left: 20px;">変動率 (%):</label>
     <input type="number" id="percent_change" value="10" style="width: 60px; padding: 5px;">
-    <button onclick="applyPercentChange(1)">加算する (+)</button>
-    <button onclick="applyPercentChange(-1)">減算する (-)</button>
+    <button class="btn-small" onclick="applyPercentChange(1)">毎月加算 (+)</button>
+    <button class="btn-small" onclick="applyPercentChange(-1)">毎月減算 (-)</button>
   </div>
   
   <div class="months-grid" id="months_container">
     </div>
 </div>
 
+<div style="text-align: center; margin-top: 30px;">
+  <button style="font-size: 18px; padding: 15px 40px;" onclick="calculateProfit()">シミュレーションを実行する</button>
+</div>
+
+<div class="box full-width" style="margin-top: 20px; overflow-x: auto;">
+  <h3>シミュレーション結果（12ヶ月）</h3>
+  <table id="result_table">
+    <thead>
+      <tr id="table_header">
+        <th>項目</th>
+        </tr>
+    </thead>
+    <tbody id="table_body">
+      </tbody>
+  </table>
+</div>
+
 <script>
-  // 初回の入力内容を定期（2回目以降）にコピーする機能
+  // --- 初期化処理 ---
+  const container = document.getElementById('months_container');
+  const header = document.getElementById('table_header');
+  for(let i=1; i<=12; i++) {
+    container.innerHTML += `
+      <div class="month-box">
+        <label>${i}ヶ月目</label><br>
+        <input type="number" class="month-val" id="month_${i}" value="100">
+      </div>`;
+    header.innerHTML += `<th>${i}ヶ月目</th>`;
+  }
+
+  // --- ユーティリティ機能 ---
   function copyToRegular() {
     const fields = ['price', 'cost', 'shipping', 'storage', 'fee', 'other', 'items'];
     fields.forEach(field => {
@@ -73,29 +117,16 @@
     });
   }
 
-  // 月別入力欄（1〜12ヶ月）の生成
-  const container = document.getElementById('months_container');
-  for(let i=1; i<=12; i++) {
-    container.innerHTML += `
-      <div class="month-box">
-        <label>${i}ヶ月目</label><br>
-        <input type="number" class="month-val" id="month_${i}" value="100">
-      </div>`;
-  }
-
-  // ワンクリックで全月同一人数にする機能
   function applySameUsers() {
     const base = document.getElementById('base_users').value;
     document.querySelectorAll('.month-val').forEach(input => input.value = base);
   }
 
-  // ％加算・減算機能
   function applyPercentChange(sign) {
     const base = parseFloat(document.getElementById('base_users').value);
     const pct = parseFloat(document.getElementById('percent_change').value) / 100;
     let current = base;
     document.querySelectorAll('.month-val').forEach((input, index) => {
-      // 1ヶ月目は基準値、2ヶ月目以降から変動させる
       if(index === 0) {
         input.value = Math.round(current);
       } else {
@@ -104,6 +135,107 @@
       }
     });
   }
+
+  function formatCurrency(num) {
+    return new Intl.NumberFormat('ja-JP').format(Math.round(num));
+  }
+
+  // --- メインの計算ロジック（ここがスプレッドシートの代わりになります） ---
+  function calculateProfit() {
+    // 1. 入力値の取得（初回）
+    const f_price = Number(document.getElementById('f_price').value);
+    const f_cost = Number(document.getElementById('f_cost').value);
+    const f_shipping = Number(document.getElementById('f_shipping').value);
+    const f_storage = Number(document.getElementById('f_storage').value);
+    const f_fee = Number(document.getElementById('f_fee').value);
+    const f_other = Number(document.getElementById('f_other').value);
+    const f_unit_cost = f_cost + f_shipping + f_storage + f_fee + f_other; // 初回1件あたりの変動費
+    const f_profit_per_user = f_price - f_unit_cost; // 初回1件あたりの粗利
+    const cpa = Number(document.getElementById('cpa').value);
+
+    // 2. 入力値の取得（定期）
+    const r_price = Number(document.getElementById('r_price').value);
+    const r_cost = Number(document.getElementById('r_cost').value);
+    const r_shipping = Number(document.getElementById('r_shipping').value);
+    const r_storage = Number(document.getElementById('r_storage').value);
+    const r_fee = Number(document.getElementById('r_fee').value);
+    const r_other = Number(document.getElementById('r_other').value);
+    const r_unit_cost = r_cost + r_shipping + r_storage + r_fee + r_other; // 定期1件あたりの変動費
+    const r_profit_per_user = r_price - r_unit_cost; // 定期1件あたりの粗利
+    const retentionRate = Number(document.getElementById('retention').value) / 100; // 継続率
+
+    // 3. 各月のデータ配列の準備
+    let newUsers = [];
+    let totalUsers = []; // その月に商品を買う人（新規＋継続）
+    let revenues = [];   // 売上
+    let costs = [];      // 変動費
+    let adSpends = [];   // 広告費
+    let monthlyProfits = []; // 単月利益
+    let cumulativeProfit = 0;
+    let cumulativeProfits = []; // 累計利益
+
+    // 4. 1〜12ヶ月のループ計算
+    for (let m = 0; m < 12; m++) {
+      // 当月の新規獲得人数
+      let currentNewUsers = Number(document.getElementById(`month_${m+1}`).value);
+      newUsers.push(currentNewUsers);
+
+      // 当月の継続ユーザー数の計算（過去の獲得者 × 継続率）
+      // ※簡易的に「毎月定率で残存する」モデルとしています
+      let repeatUsers = 0;
+      for (let past = 0; past < m; past++) {
+        // past月目の獲得者が、今(m月目)何ヶ月目かを計算し、継続率を乗算
+        let monthsPassed = m - past;
+        repeatUsers += newUsers[past] * Math.pow(retentionRate, monthsPassed);
+      }
+
+      // 月間売上・費用の算出
+      let revenue = (currentNewUsers * f_price) + (repeatUsers * r_price);
+      let cost = (currentNewUsers * f_unit_cost) + (repeatUsers * r_unit_cost);
+      let adSpend = currentNewUsers * cpa;
+      
+      let profit = revenue - cost - adSpend;
+      cumulativeProfit += profit;
+
+      totalUsers.push(currentNewUsers + repeatUsers);
+      revenues.push(revenue);
+      costs.push(cost);
+      adSpends.push(adSpend);
+      monthlyProfits.push(profit);
+      cumulativeProfits.push(cumulativeProfit);
+    }
+
+    // 5. 結果をテーブルに描画
+    const tbody = document.getElementById('table_body');
+    tbody.innerHTML = ''; // クリア
+
+    const rows = [
+      { label: '新規獲得人数 (人)', data: newUsers },
+      { label: '当月購入者数 (人)', data: totalUsers },
+      { label: '売上高 (円)', data: revenues },
+      { label: '変動費 (円)', data: costs },
+      { label: '広告費(CPA分) (円)', data: adSpends },
+      { label: '単月利益 (円)', data: monthlyProfits, isProfit: true },
+      { label: '累計利益 (円)', data: cumulativeProfits, isProfit: true }
+    ];
+
+    rows.forEach(row => {
+      let tr = document.createElement('tr');
+      tr.innerHTML = `<td class="row-header">${row.label}</td>`;
+      row.data.forEach(val => {
+        let displayVal = formatCurrency(val);
+        let colorClass = '';
+        if (row.isProfit) {
+          colorClass = val >= 0 ? 'profit-positive' : 'profit-negative';
+        }
+        tr.innerHTML += `<td class="${colorClass}">${displayVal}</td>`;
+      });
+      tbody.appendChild(tr);
+    });
+  }
+
+  // 初期状態で1回計算を走らせておく
+  window.onload = calculateProfit;
 </script>
 
 </body>
