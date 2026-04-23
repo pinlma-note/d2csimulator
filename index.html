@@ -26,7 +26,9 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
     .form-group { display: flex; flex-direction: column; }
     .form-group label { font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #555; }
-    .form-group input { padding: 10px 8px; border: 1px solid #ccc; border-radius: 6px; text-align: right; font-size: 16px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+    .form-group input[type="number"] { padding: 10px 8px; border: 1px solid #ccc; border-radius: 6px; text-align: right; font-size: 16px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+    .form-group input[type="number"]:disabled { background-color: #f5f5f5; color: #aaa; cursor: not-allowed; border-color: #eee; box-shadow: none; }
+    .checkbox-label { font-weight: normal; font-size: 11px; margin-top: 4px; display: flex; align-items: center; gap: 4px; color: var(--accent); cursor: pointer; }
 
     .sidebar-grid { display: flex; flex-direction: column; gap: 10px; }
     .stat-card { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #eee; text-align: center; }
@@ -90,213 +92,37 @@
     <div class="card card-accent">
       <h3>🛒 販売・単価・CPA</h3>
       <div class="form-grid">
-        <div class="form-group"><label>初回販売価格(円)</label><input type="number" id="f_price" value="3000"></div>
+        <div class="form-group">
+          <label>初回販売価格(円)</label>
+          <input type="number" id="f_price" value="3000">
+          <label class="checkbox-label"><input type="checkbox" id="sync_price" checked style="width: auto;">定期も同一</label>
+        </div>
+        <div class="form-group">
+          <label>定期販売価格(円)</label>
+          <input type="number" id="r_price" value="3000" disabled>
+        </div>
+        
+        <div class="form-group">
+          <label>初回変動費(円/個)</label>
+          <input type="number" id="f_cost" value="1600">
+          <label class="checkbox-label"><input type="checkbox" id="sync_cost" checked style="width: auto;">定期も同一</label>
+        </div>
+        
         <div class="form-group"><label>新規獲得CPA(円)</label><input type="number" id="cpa" value="5000"></div>
         <div class="form-group"><label>2回目継続率(%)</label><input type="number" id="ret_2" value="82.0"></div>
-        <div class="form-group"><label>3回目継続率(%)</label><input type="number" id="ret_3" value="81.0"></div>
-        <div class="form-group"><label>定期販売価格(円)</label><input type="number" id="r_price" value="5000"></div>
       </div>
     </div>
 
     <details>
-      <summary>⚙️ 詳細設定（コスト・出荷数量・4回目以降）</summary>
+      <summary>⚙️ 詳細設定（コスト・出荷数量・3回目以降）</summary>
       <div style="padding: 0 15px 15px;">
         <div class="form-grid">
           <div class="form-group"><label>初回出荷数量(個/人)</label><input type="number" id="f_qty" value="1"></div>
           <div class="form-group"><label>定期出荷数量(個/人)</label><input type="number" id="r_qty" value="1"></div>
-          <div class="form-group"><label>初回変動費(円/個)</label><input type="number" id="f_cost" value="1600"></div>
-          <div class="form-group"><label>定期変動費(円/個)</label><input type="number" id="r_cost" value="1800"></div>
+          
+          <div class="form-group">
+            <label>定期変動費(円/個)</label>
+            <input type="number" id="r_cost" value="1600" disabled>
+          </div>
+          
           <div class="form-group"><label>CRM費(売上の%)</label><input type="number" id="crm_rate" value="5"></div>
-          <div class="form-group"><label>4回目継続率(%)</label><input type="number" id="ret_4" value="75.0"></div>
-        </div>
-      </div>
-    </details>
-
-    <div class="card card-accent">
-      <h3>📣 新規獲得人数 (1-24ヶ月)</h3>
-      <div style="margin-bottom: 15px; font-size: 13px; background: #f0f4f8; padding: 12px; border-radius: 8px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-        <div>
-          一括設定: <input type="number" id="base_users" value="100" style="width:70px; padding:6px; font-size:16px;">
-          <button onclick="applySameUsers()" style="width:auto; padding:6px 12px; font-size:13px; margin-left:5px; background:#bdc3c7; color:#333;">適用</button>
-        </div>
-        <div style="margin-left: auto;">
-          <input type="checkbox" id="auto_decay" checked style="transform: scale(1.3); margin-right: 5px;"> 
-          <label for="auto_decay" style="cursor: pointer; font-weight: bold; color: var(--accent);">25ヶ月以降(減衰継続モデル)</label>
-        </div>
-      </div>
-      <div class="month-inputs" id="months_container"></div>
-    </div>
-
-    <div class="card">
-      <h3>📈 おすすめ指標サマリー (年次)</h3>
-      <div class="table-wrapper">
-        <table id="yearly_table">
-          <thead><tr><th class="row-header">項目</th><th>1年目</th><th>2年目</th><th>3年目</th><th>4年目</th><th>5年目</th></tr></thead>
-          <tbody id="yearly_body"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <details>
-      <summary>🔍 詳細推移データを確認する (月次データ詳細)</summary>
-      <div class="table-wrapper" style="padding: 1px;">
-        <table id="monthly_table">
-          <thead><tr id="m_header"><th class="row-header">項目</th></tr></thead>
-          <tbody id="m_body"></tbody>
-        </table>
-      </div>
-    </details>
-
-  </div>
-
-  <div class="sidebar">
-    <div class="sidebar-grid">
-      <div class="stat-card main">
-        <span class="stat-label">5年後 累計利益</span>
-        <span class="stat-val" id="res_y5">¥0</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">累計新規客数 (5年)</span>
-        <span class="stat-val" id="res_total_users">0人</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">投資回収 (BEP)</span>
-        <span class="stat-val" id="res_bep" style="color: var(--warning);">未回収</span>
-      </div>
-      
-      <button class="btn-calc" onclick="calculate()">シミュレーション実行</button>
-      <button class="btn-csv" onclick="downloadCSV()">CSV保存</button>
-    </div>
-  </div>
-</div>
-
-<script>
-const masterRet = [100, 82, 81, 75, 85, 95, 95.25, 95.5, 95.75, 96, 96.25, 96.5, 95.76, 95.02, 94.28, 93.54, 92.8, 92.06, 91.41, 90.75, 90.1, 89.44, 88.79, 88.13, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.57, 91.57, 91.57, 91.58, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5];
-
-const container = document.getElementById('months_container');
-const m_header = document.getElementById('m_header');
-for(let i=1; i<=24; i++){
-  container.innerHTML += `<div class="m-box"><span>${i}月</span><input type="number" class="m-val" id="m${i}" value="100"></div>`;
-  m_header.innerHTML += `<th>${i}月</th>`;
-}
-
-function applySameUsers(){
-  const v = document.getElementById('base_users').value;
-  document.querySelectorAll('.m-val').forEach(el => el.value = v);
-}
-
-function calculate(){
-  const f_p = Number(document.getElementById('f_price').value), f_q = Number(document.getElementById('f_qty').value);
-  const r_p = Number(document.getElementById('r_price').value), r_q = Number(document.getElementById('r_qty').value);
-  const cpa = Number(document.getElementById('cpa').value), f_c = Number(document.getElementById('f_cost').value), r_c = Number(document.getElementById('r_cost').value);
-  const crm = Number(document.getElementById('crm_rate').value) / 100;
-  
-  let curRet = [...masterRet];
-  curRet[1] = Number(document.getElementById('ret_2').value);
-  curRet[2] = Number(document.getElementById('ret_3').value);
-  curRet[3] = Number(document.getElementById('ret_4').value);
-
-  let newUsers = [];
-  let totalNewUsers = 0;
-  for(let i=1; i<=24; i++){
-    let val = Number(document.getElementById(`m${i}`).value);
-    newUsers.push(val); totalNewUsers += val;
-  }
-  
-  const avgNew = totalNewUsers / 24;
-  const isDecay = document.getElementById('auto_decay').checked;
-  for(let m=25; m<=60; m++){
-    let val = isDecay ? avgNew * (curRet[Math.min(m-1, 59)]/100) : 0;
-    newUsers.push(val); totalNewUsers += val;
-  }
-
-  let cumNew = 0, cumShip = 0, cumRev = 0, cumProf = 0, bep = 0;
-  let yearly = Array.from({length: 5}, () => ({rev: 0, prof: 0, new: 0, ship: 0}));
-  let monthlyLog = [];
-
-  for(let m=0; m<60; m++){
-    let curNew = newUsers[m], curRep = 0;
-    for(let p=0; p<m; p++){
-      let surv = newUsers[p];
-      for(let s=1; s<=(m-p); s++){ surv *= (curRet[Math.min(s, 59)]/100); }
-      curRep += surv;
-    }
-
-    let shipQty = (curNew * f_q) + (curRep * r_q);
-    let rev = (curNew * f_p) + (curRep * r_p);
-    let cost = (curNew * f_q * f_c) + (curRep * r_q * r_c);
-    let prof = rev - cost - (curNew * cpa) - (rev * crm);
-
-    cumNew += curNew; cumShip += shipQty; cumRev += rev; cumProf += prof;
-    if(cumProf > 0 && bep === 0) bep = m + 1;
-
-    let yIdx = Math.floor(m/12);
-    yearly[yIdx].rev += rev; yearly[yIdx].prof += prof;
-    yearly[yIdx].new += curNew; yearly[yIdx].ship += shipQty;
-
-    if(m < 24){
-      monthlyLog.push({ 
-        new: curNew, rep: curRep, buyTotal: curNew + curRep, ship: shipQty, 
-        cumNew: cumNew, cumShip: cumShip, rev: rev, cumRev: cumRev, prof: prof, cumProf: cumProf 
-      });
-    }
-  }
-
-  document.getElementById('res_y5').innerText = "¥" + Math.round(cumProf).toLocaleString();
-  document.getElementById('res_total_users').innerText = Math.round(cumNew).toLocaleString() + "人";
-  document.getElementById('res_bep').innerText = bep > 0 ? bep + " ヶ月" : "未回収";
-  document.getElementById('top_bep').innerText = bep > 0 ? bep : "-";
-
-  let yBody = "";
-  const yLabels = ["累計売上", "累計利益", "累計新規購入者", "累計商品出荷数", "利益率"];
-  for(let i=0; i<5; i++){
-    yBody += `<tr><td class="row-header">${yLabels[i]}</td>`;
-    let cR=0, cP=0, cN=0, cS=0;
-    for(let y=0; y<5; y++){
-      cR += yearly[y].rev; cP += yearly[y].prof; cN += yearly[y].new; cS += yearly[y].ship;
-      if(i===0) yBody += `<td>¥${Math.round(cR).toLocaleString()}</td>`;
-      else if(i===1) yBody += `<td class="${cP>=0?'pos':'neg'}">¥${Math.round(cP).toLocaleString()}</td>`;
-      else if(i===2) yBody += `<td>${Math.round(cN).toLocaleString()}人</td>`;
-      else if(i===3) yBody += `<td>${Math.round(cS).toLocaleString()}個</td>`;
-      else yBody += `<td>${(cR>0?cP/cR*100:0).toFixed(1)}%</td>`;
-    }
-    yBody += `</tr>`;
-  }
-  document.getElementById('yearly_body').innerHTML = yBody;
-
-  let mBody = "";
-  const mLabels = ["新規購入者数", "リピート購入者数", "単月購入者合計", "単月出荷数量", "累計新規購入者数", "累計出荷数量", "単月売上", "累計売上", "単月損益", "累計損益"];
-  const mKeys = ["new", "rep", "buyTotal", "ship", "cumNew", "cumShip", "rev", "cumRev", "prof", "cumProf"];
-  mKeys.forEach((key, idx) => {
-    mBody += `<tr><td class="row-header">${mLabels[idx]}</td>`;
-    monthlyLog.forEach(log => {
-      let v = Math.round(log[key]);
-      let txt = (key==='prof'||key==='cumProf'||key==='rev'||key==='cumRev') ? "¥"+v.toLocaleString() : v.toLocaleString();
-      let cls = (key==='prof'||key==='cumProf') && v < 0 ? "neg" : ((key==='prof'||key==='cumProf') ? "pos" : "");
-      mBody += `<td class="${cls}">${txt}</td>`;
-    });
-    mBody += `</tr>`;
-  });
-  document.getElementById('m_body').innerHTML = mBody;
-}
-
-function downloadCSV() {
-  const getD = id => {
-    let rs = [];
-    document.getElementById(id).querySelectorAll('tr').forEach(tr => {
-      let r = []; tr.querySelectorAll('th, td').forEach(td => r.push('"' + td.innerText.replace(/,/g,"").replace(/¥/g,"").replace(/人/g,"").replace(/個/g,"") + '"'));
-      rs.push(r.join(","));
-    });
-    return rs;
-  };
-  let csv = ["--- SUMMARY ---"].concat(getD('yearly_table')).concat(["", "--- DETAILS ---"]).concat(getD('monthly_table')).join("\r\n");
-  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-  const blob = new Blob([bom, csv], { type: 'text/csv' });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "d2c_report.csv"; a.click();
-}
-
-window.onload = calculate;
-</script>
-
-</body>
-</html>
