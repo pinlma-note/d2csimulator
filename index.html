@@ -26,8 +26,9 @@
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
     .form-group { display: flex; flex-direction: column; }
     .form-group label { font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #555; }
-    .form-group input { padding: 10px 8px; border: 1px solid #ccc; border-radius: 6px; text-align: right; font-size: 16px; }
-    .form-group input:disabled { background: #f5f5f5; color: #aaa; }
+    /* 入力欄のデザイン共通化 */
+    .form-group input { padding: 10px 8px; border: 1px solid #ccc; border-radius: 6px; text-align: right; font-size: 16px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); }
+    .form-group input:disabled { background: #f5f5f5; color: #aaa; cursor: not-allowed; }
     .checkbox-label { font-size: 11px; margin-top: 4px; display: flex; align-items: center; gap: 4px; color: var(--accent); cursor: pointer; }
 
     .sidebar-grid { display: flex; flex-direction: column; gap: 10px; }
@@ -39,7 +40,6 @@
     
     button { padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; width: 100%; font-size: 15px; }
     .btn-calc { background: var(--success); color: white; margin-bottom: 10px; }
-    .btn-save { background: var(--accent); color: white; margin-bottom: 5px; font-size: 13px; }
     .btn-ai { background: #6c5ce7; color: white; margin-bottom: 5px; }
     .btn-csv { background: #e0e6ed; color: #333; }
 
@@ -54,12 +54,12 @@
 
     .month-inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 6px; }
     .m-box { background: #f9f9f9; padding: 6px; border-radius: 4px; border: 1px solid #ddd; text-align: center; }
-    .m-box input { width: 100%; border: none; background: transparent; text-align: center; font-weight: bold; font-size: 16px; }
+    .m-box input { width: 100%; border: none; background: transparent; text-align: center; font-weight: bold; font-size: 16px; padding: 0; }
+    .m-box span { font-size: 10px; color: #777; display: block; margin-bottom: 2px;}
 
     details { background: #fff; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ccc; }
     summary { padding: 15px; font-weight: bold; cursor: pointer; color: var(--accent); }
 
-    /* AI Evaluation Area */
     #ai_eval { background: #f0edff; border: 1px solid #dcd6ff; border-radius: 8px; padding: 15px; margin-top: 20px; display: none; font-size: 13px; line-height: 1.6; }
 
     @media (max-width: 900px) {
@@ -74,14 +74,14 @@
 
 <header>
   <h1>📈 D2C Strategy Dashboard Pro</h1>
-  <div style="text-align: right;">
-    <select id="plan_select" style="padding: 5px; border-radius: 5px;" onchange="loadSnapshot()">
+  <div style="text-align: right; display: flex; align-items: center; gap: 5px;">
+    <select id="plan_select" style="padding: 8px; border-radius: 5px; font-size: 13px; border: 1px solid #ccc;" onchange="loadSnapshot()">
       <option value="current">現在の設定</option>
       <option value="plan_a">プラン A (保存枠)</option>
       <option value="plan_b">プラン B (保存枠)</option>
       <option value="plan_c">プラン C (保存枠)</option>
     </select>
-    <button onclick="saveSnapshot()" style="width: auto; padding: 5px 10px; font-size: 11px; background: var(--accent); color: white; margin-left: 5px;">この枠に保存</button>
+    <button onclick="saveSnapshot()" style="width: auto; padding: 8px 12px; font-size: 13px; background: var(--accent); color: white;">この枠に保存</button>
   </div>
 </header>
 
@@ -94,20 +94,26 @@
       <div class="form-grid">
         <div class="form-group">
           <label>初回販売価格(円)</label>
-          <input type="number" id="f_price" value="3000">
+          <input type="text" inputmode="numeric" class="num-input" id="f_price" value="3,000">
           <label class="checkbox-label"><input type="checkbox" id="sync_price" checked>定期も同一</label>
         </div>
         <div class="form-group">
           <label>定期販売価格(円)</label>
-          <input type="number" id="r_price" value="3000">
+          <input type="text" inputmode="numeric" class="num-input" id="r_price" value="3,000" disabled>
         </div>
         <div class="form-group">
           <label>初回変動費(円/個)</label>
-          <input type="number" id="f_cost" value="1600">
+          <input type="text" inputmode="numeric" class="num-input" id="f_cost" value="1,600">
           <label class="checkbox-label"><input type="checkbox" id="sync_cost" checked>定期も同一</label>
         </div>
-        <div class="form-group"><label>新規獲得CPA(円)</label><input type="number" id="cpa" value="5000"></div>
-        <div class="form-group"><label>2回目継続率(%)</label><input type="number" id="ret_2" value="82.0"></div>
+        <div class="form-group">
+          <label>新規獲得CPA(円)</label>
+          <input type="text" inputmode="numeric" class="num-input" id="cpa" value="5,000">
+        </div>
+        <div class="form-group">
+          <label>2回目継続率(%)</label>
+          <input type="number" id="ret_2" value="82.0" step="0.1">
+        </div>
       </div>
     </div>
 
@@ -116,12 +122,24 @@
       <div style="padding: 0 15px 15px;">
         <div class="section-title">ロジック詳細</div>
         <div class="form-grid">
-          <div class="form-group"><label>月次固定費合計(円)</label><input type="number" id="fixed_cost" value="0"></div>
+          <div class="form-group">
+            <label>月次固定費合計(円)</label>
+            <input type="text" inputmode="numeric" class="num-input" id="fixed_cost" value="0">
+          </div>
           <div class="form-group"><label>CRM費(売上の%)</label><input type="number" id="crm_rate" value="5"></div>
-          <div class="form-group"><label>3回目継続率(%)</label><input type="number" id="ret_3" value="81.0"></div>
-          <div class="form-group"><label>4回目継続率(%)</label><input type="number" id="ret_4" value="75.0"></div>
-          <div class="form-group"><label>定期変動費(円/個)</label><input type="number" id="r_cost" value="1600"></div>
-          <div class="form-group"><label>初回個数/定期個数</label><div style="display:flex;gap:5px;"><input type="number" id="f_qty" value="1" style="width:40px;"><input type="number" id="r_qty" value="1" style="width:40px;"></div></div>
+          <div class="form-group"><label>3回目継続率(%)</label><input type="number" id="ret_3" value="81.0" step="0.1"></div>
+          <div class="form-group"><label>4回目継続率(%)</label><input type="number" id="ret_4" value="75.0" step="0.1"></div>
+          <div class="form-group">
+            <label>定期変動費(円/個)</label>
+            <input type="text" inputmode="numeric" class="num-input" id="r_cost" value="1,600" disabled>
+          </div>
+          <div class="form-group">
+            <label>初回個数/定期個数</label>
+            <div style="display:flex;gap:5px;">
+              <input type="number" id="f_qty" value="1" style="width:50px;">
+              <input type="number" id="r_qty" value="1" style="width:50px;">
+            </div>
+          </div>
         </div>
         <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
         <div class="section-title">キャッシュフロー(CF)設定</div>
@@ -139,9 +157,14 @@
 
     <div class="card" style="border-top-color: var(--success);">
       <h3>📣 新規獲得人数 (1-24ヶ月)</h3>
-      <div style="margin-bottom:15px; font-size:12px; background:#f0f4f8; padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <div>一括: <input type="number" id="base_users" value="100" style="width:50px;"> <button onclick="applySameUsers()" style="width:auto; padding:2px 10px; font-size:11px;">適用</button></div>
-        <label style="cursor:pointer; font-weight:bold; color:var(--accent);"><input type="checkbox" id="auto_decay" checked> 25ヶ月以降(減衰モデル)</label>
+      <div style="margin-bottom:15px; font-size:13px; background:#f0f4f8; padding:12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div>
+          一括: <input type="text" inputmode="numeric" class="num-input" id="base_users" value="100" style="width:70px; padding:6px; font-size:16px;"> 
+          <button onclick="applySameUsers()" style="width:auto; padding:6px 12px; font-size:13px; background:#bdc3c7; color:#333;">適用</button>
+        </div>
+        <label style="cursor:pointer; font-weight:bold; color:var(--accent); display:flex; align-items:center; gap:5px;">
+          <input type="checkbox" id="auto_decay" checked style="transform: scale(1.3);"> 25ヶ月以降(減衰モデル)
+        </label>
       </div>
       <div class="month-inputs" id="months_container"></div>
     </div>
@@ -186,30 +209,64 @@
       </div>
       
       <button class="btn-calc" onclick="calculate()">シミュレーション実行</button>
-      <button class="btn-ai" onclick="runAIEvaluation()">AIプラン評価実行</button>
+      <button class="btn-ai" onclick="runAIEvaluation()">AIプラン評価</button>
       <button class="btn-csv" onclick="downloadCSV()">CSVで保存</button>
     </div>
   </div>
 </div>
 
 <script>
+// --- 3桁カンマ区切りの制御ロジック ---
+// フォーカスが外れた時にカンマを付与
+document.addEventListener('focusout', function(e) {
+  if(e.target.classList.contains('num-input')) {
+    let val = e.target.value.replace(/,/g, '');
+    if(!isNaN(val) && val !== '') e.target.value = Number(val).toLocaleString();
+  }
+});
+// フォーカスした時にカンマを外す（入力しやすくする）
+document.addEventListener('focusin', function(e) {
+  if(e.target.classList.contains('num-input')) {
+    e.target.value = e.target.value.replace(/,/g, '');
+  }
+});
+
+// カンマ付きの入力枠から純粋な数値を取得するユーティリティ
+function getVal(id) {
+  const el = document.getElementById(id);
+  if(!el) return 0;
+  return Number(el.value.replace(/,/g, '')) || 0;
+}
+
 const masterRet = [100, 82, 81, 75, 85, 95, 95.25, 95.5, 95.75, 96, 96.25, 96.5, 95.76, 95.02, 94.28, 93.54, 92.8, 92.06, 91.41, 90.75, 90.1, 89.44, 88.79, 88.13, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.57, 91.57, 91.57, 91.58, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5];
 
-// 初期描画
+// 月次枠生成
 const container = document.getElementById('months_container');
 const m_header = document.getElementById('m_header');
 for(let i=1; i<=24; i++){
-  container.innerHTML += `<div class="m-box"><span>${i}月</span><input type="number" class="m-val" id="m${i}" value="100"></div>`;
+  container.innerHTML += `<div class="m-box"><span>${i}月</span><input type="text" inputmode="numeric" class="m-val num-input" id="m${i}" value="100"></div>`;
   m_header.innerHTML += `<th>${i}月</th>`;
 }
 
-// 同期ロジック
+// 同期チェックボックスのロジック
 function setupSync() {
   const ids = [['f_price','r_price','sync_price'], ['f_cost','r_cost','sync_cost']];
   ids.forEach(([f, r, s]) => {
     const elF = document.getElementById(f), elR = document.getElementById(r), elS = document.getElementById(s);
-    const sync = () => { if(elS.checked){ elR.value = elF.value; elR.disabled = true; } else { elR.disabled = false; } };
-    elF.addEventListener('input', sync); elS.addEventListener('change', sync); sync();
+    const sync = () => { 
+      if(elS.checked){ 
+        // f側のカンマを除いて数値化し、カンマ付きでr側にセット
+        let v = elF.value.replace(/,/g, '');
+        elR.value = v === '' ? '' : Number(v).toLocaleString(); 
+        elR.disabled = true; 
+      } else { 
+        elR.disabled = false; 
+      } 
+    };
+    elF.addEventListener('input', sync); 
+    elF.addEventListener('focusout', sync); 
+    elS.addEventListener('change', sync); 
+    sync();
   });
 }
 
@@ -221,47 +278,41 @@ function toggleCFInput() {
 }
 
 function applySameUsers(){
-  const v = document.getElementById('base_users').value;
-  document.querySelectorAll('.m-val').forEach(el => el.value = v);
+  const v = getVal('base_users');
+  document.querySelectorAll('.m-val').forEach(el => el.value = v.toLocaleString());
 }
 
-// 按分ロジック関数 (金額を月をまたいで分配する)
 function distribute(amount, delayDays, targetArray, startMonth) {
   const monthsDelay = Math.floor(delayDays / 30);
-  const remainder = (delayDays % 30) / 30; // 15日なら0.5
-  
+  const remainder = (delayDays % 30) / 30;
   const m1 = startMonth + monthsDelay;
   const m2 = m1 + 1;
-
   if (m1 < 62) targetArray[m1] = (targetArray[m1] || 0) + (amount * (1 - remainder));
   if (m2 < 62) targetArray[m2] = (targetArray[m2] || 0) + (amount * remainder);
 }
 
 function calculate() {
-  const f_p = Number(document.getElementById('f_price').value), f_q = Number(document.getElementById('f_qty').value);
-  const r_p = Number(document.getElementById('r_price').value), r_q = Number(document.getElementById('r_qty').value);
-  const cpa = Number(document.getElementById('cpa').value), f_c = Number(document.getElementById('f_cost').value), r_c = Number(document.getElementById('r_cost').value);
-  const crm = Number(document.getElementById('crm_rate').value) / 100, fixed = Number(document.getElementById('fixed_cost').value);
+  const f_p = getVal('f_price'), f_q = getVal('f_qty');
+  const r_p = getVal('r_price'), r_q = getVal('r_qty');
+  const cpa = getVal('cpa'), f_c = getVal('f_cost'), r_c = getVal('r_cost');
+  const crm = getVal('crm_rate') / 100, fixed = getVal('fixed_cost');
   
   let curRet = [...masterRet];
-  curRet[1] = Number(document.getElementById('ret_2').value); curRet[2] = Number(document.getElementById('ret_3').value); curRet[3] = Number(document.getElementById('ret_4').value);
+  curRet[1] = getVal('ret_2'); curRet[2] = getVal('ret_3'); curRet[3] = getVal('ret_4');
   
   let newUsers = []; let totalNew = 0;
-  for(let i=1; i<=24; i++){ let v = Number(document.getElementById(`m${i}`).value); newUsers.push(v); totalNewUsers = totalNew += v; }
+  for(let i=1; i<=24; i++){ let v = getVal(`m${i}`); newUsers.push(v); totalNew += v; }
   const avgN = totalNew / 24, isDecay = document.getElementById('auto_decay').checked;
   for(let m=25; m<=60; m++) newUsers.push(isDecay ? avgN * (curRet[Math.min(m-1, 59)]/100) : 0);
 
-  // CF設定
   let inD = 15, adD = 30, coD = 30;
   if(document.getElementById('cf_custom').checked){
-    inD = Number(document.getElementById('cf_in').value); adD = Number(document.getElementById('cf_ad').value); coD = Number(document.getElementById('cf_cost').value);
+    inD = getVal('cf_in'); adD = getVal('cf_ad'); coD = getVal('cf_cost');
   }
 
   let tProf = 0, bep = 0, peakMin = 0;
   let yearly = Array.from({length: 5}, () => ({rev: 0, prof: 0}));
   let monthlyLog = [];
-  
-  // CF計算用バッファ (62ヶ月分)
   let cfInflow = new Array(65).fill(0), cfOutflow = new Array(65).fill(0);
   let cumCF = 0;
 
@@ -281,7 +332,6 @@ function calculate() {
     if(tProf > 0 && bep === 0) bep = m + 1;
     yearly[Math.floor(m / 12)].rev += rev; yearly[Math.floor(m / 12)].prof += prof;
 
-    // キャッシュフロー按分登録
     distribute(rev, inD, cfInflow, m);
     distribute(ad, adD, cfOutflow, m);
     distribute(cost + (rev * crm) + fixed, coD, cfOutflow, m);
@@ -289,7 +339,6 @@ function calculate() {
     monthlyLog.push({ new: curNew, rep: curRep, rev: rev, prof: prof, cumProf: tProf });
   }
 
-  // CF推移の集計
   let monthlyCF = [];
   for(let m=0; m<60; m++){
     let flow = cfInflow[m] - cfOutflow[m];
@@ -298,13 +347,11 @@ function calculate() {
     if(m < 24) monthlyCF.push({ flow, cumCF });
   }
 
-  // 表示更新
   const fmt = n => Math.round(n).toLocaleString();
   document.getElementById('res_y5').innerText = "¥" + fmt(tProf);
   document.getElementById('res_peak').innerText = "¥" + fmt(Math.abs(peakMin));
   document.getElementById('res_bep').innerText = bep > 0 ? bep + " ヶ月" : "未回収";
 
-  // 年次テーブル
   let yBody = "";
   for(let i=0; i<3; i++){
     yBody += `<tr><td class="row-header">${["累計売上","累計営業利益","利益率"][i]}</td>`;
@@ -319,7 +366,6 @@ function calculate() {
   }
   document.getElementById('yearly_body').innerHTML = yBody;
 
-  // 月次テーブル
   let mBody = "";
   const labels = ["新規数","リピート数","単月売上","単月損益","累計損益","単月CF","累計CF"];
   labels.forEach((label, idx) => {
@@ -339,15 +385,25 @@ function calculate() {
   });
   document.getElementById('m_body').innerHTML = mBody;
 
-  saveCurrent(); // 実行のたびに自動保存
+  saveCurrent(); // 実行後に必ずカレントを保存
 }
 
-// --- 保存機能 ---
-function saveCurrent() {
-  const inputs = document.querySelectorAll('input[type="number"], input[type="checkbox"], input[type="radio"]:checked');
+// --- 保存・復元機能のロジック ---
+function getFormData() {
+  const inputs = document.querySelectorAll('input.num-input, input[type="number"], input[type="checkbox"], input[type="radio"]:checked');
   const data = {};
-  inputs.forEach(el => data[el.id || el.name] = el.type === 'checkbox' ? el.checked : el.value);
-  localStorage.setItem('d2c_current_config', JSON.stringify(data));
+  inputs.forEach(el => {
+    if(el.type === 'checkbox' || el.type === 'radio') {
+      data[el.id] = el.checked;
+    } else {
+      data[el.id] = el.value.replace(/,/g, ''); // カンマを抜いて保存
+    }
+  });
+  return data;
+}
+
+function saveCurrent() {
+  localStorage.setItem('d2c_current_config', JSON.stringify(getFormData()));
 }
 
 function loadConfig(configStr) {
@@ -356,9 +412,12 @@ function loadConfig(configStr) {
   Object.keys(data).forEach(id => {
     const el = document.getElementById(id);
     if(el) {
-      if(el.type === 'checkbox') el.checked = data[id];
-      else if(el.type === 'radio') { /* NOP */ }
-      else el.value = data[id];
+      if(el.type === 'checkbox' || el.type === 'radio') {
+        el.checked = data[id];
+      } else {
+        // カンマ付きで画面に戻す
+        el.value = el.classList.contains('num-input') && data[id] !== '' ? Number(data[id]).toLocaleString() : data[id];
+      }
     }
   });
   setupSync(); toggleCFInput();
@@ -366,10 +425,14 @@ function loadConfig(configStr) {
 
 function saveSnapshot() {
   const plan = document.getElementById('plan_select').value;
-  if(plan === 'current') return alert("保存するプラン枠を選択してください");
-  const data = localStorage.getItem('d2c_current_config');
-  localStorage.setItem('d2c_snap_' + plan, data);
-  alert("プランを保存しました");
+  if(plan === 'current') {
+    alert("保存先のプラン枠（A〜C）を選択してから保存ボタンを押してください");
+    return;
+  }
+  const data = getFormData();
+  localStorage.setItem('d2c_snap_' + plan, JSON.stringify(data));
+  const planText = document.getElementById('plan_select').options[document.getElementById('plan_select').selectedIndex].text;
+  alert(planText + " に現在の設定を保存しました！");
 }
 
 function loadSnapshot() {
@@ -379,25 +442,24 @@ function loadSnapshot() {
   calculate();
 }
 
-// --- AI評価 ---
+// --- AI評価機能 ---
 function runAIEvaluation() {
-  const f_p = Number(document.getElementById('f_price').value), cpa = Number(document.getElementById('cpa').value);
-  const ret2 = Number(document.getElementById('ret_2').value), y5 = document.getElementById('res_y5').innerText;
-  const bep = parseInt(document.getElementById('res_bep').innerText) || 99;
+  const f_p = getVal('f_price'), cpa = getVal('cpa'), ret2 = getVal('ret_2');
   const peak = document.getElementById('res_peak').innerText;
+  const bep = parseInt(document.getElementById('res_bep').innerText) || 99;
 
   let score = 0, advice = "";
-  if(cpa < f_p) score += 40; else score += 10;
-  if(ret2 > 70) score += 30; else score -= 10;
-  if(bep < 10) score += 30;
+  if(cpa <= f_p * 1.5) score += 40; else score += 10;
+  if(ret2 >= 80) score += 30; else score -= 10;
+  if(bep <= 12) score += 30; else if(bep <= 24) score += 15;
 
-  if(score > 80) advice = "【優良】LTVと獲得効率のバランスが非常に良いです。広告投資を加速させるフェーズです。";
-  else if(score > 50) advice = "【標準】2年目以降に利益が出るモデルですが、CPAの高騰が命取りになります。CRM強化を優先してください。";
+  if(score >= 80) advice = "【優良】LTVと獲得効率のバランスが非常に良いです。広告投資を加速させるフェーズです。";
+  else if(score >= 50) advice = "【標準】2年目以降に利益が出るモデルですが、CPAの高騰が命取りになります。CRM強化を優先してください。";
   else advice = "【警告】キャッシュの燃焼が速すぎます。単価アップか継続率の根本的改善なしには、追加投資は危険です。";
 
   const evalBox = document.getElementById('ai_eval');
   evalBox.style.display = "block";
-  evalBox.innerHTML = `<strong>🤖 AI経営診断結果 (スコア: ${score}/100)</strong><br>${advice}<br><br>最大必要資金 ${peak} に対する手元資金の余裕を確認してください。`;
+  evalBox.innerHTML = `<strong>🤖 AI経営診断結果 (スコア: ${score}/100)</strong><br>${advice}<br><br>※ 最大必要資金 <strong>${peak}</strong> に対する手元資金の余裕を必ず確認してください。`;
 }
 
 function downloadCSV() {
@@ -410,11 +472,17 @@ function downloadCSV() {
     return rs;
   };
   let csv = ["--- SUMMARY ---"].concat(getD('yearly_table')).concat(["", "--- DETAILS ---"]).concat(getD('monthly_table')).join("\r\n");
-  const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv' });
+  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+  const blob = new Blob([bom, csv], { type: 'text/csv' });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "d2c_strategy_report.csv"; a.click();
 }
 
 window.onload = () => {
+  // 初回ロード時にカンマフォーマットを全適用
+  document.querySelectorAll('.num-input').forEach(el => {
+    let v = el.value.replace(/,/g, '');
+    if(!isNaN(v) && v !== '') el.value = Number(v).toLocaleString();
+  });
   setupSync();
   loadConfig(localStorage.getItem('d2c_current_config'));
   calculate();
