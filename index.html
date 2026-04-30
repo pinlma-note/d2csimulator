@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>D2C Strategy Dashboard - Portfolio V7</title>
+  <title>D2C Strategy Dashboard - Portfolio V8</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -60,7 +60,6 @@
     .neg { color: var(--danger); font-weight: bold; }
     .peak-row { background-color: #fff9e6 !important; }
 
-    /* 獲得人数タブUI */
     .acq-tabs { display: flex; gap: 5px; margin-bottom: 12px; border-bottom: 2px solid #eee; padding-bottom: 5px; }
     .acq-tab-btn { padding: 6px 12px; font-size: 12px; border: none; background: transparent; color: #7f8c8d; cursor: pointer; font-weight: bold; border-radius: 4px; width: auto;}
     .acq-tab-btn.active { background: var(--accent); color: #fff; }
@@ -135,7 +134,7 @@
       </div>
 
       <details>
-        <summary>⚙️ 詳細設定（モデル・固定費・CF設定・出荷数量）</summary>
+        <summary>⚙️ 詳細設定（モデル・固定費・サイクル・CF・数量）</summary>
         <div style="padding: 0 15px 15px;">
           
           <div class="section-title">F2転換率算出モデル設定</div>
@@ -152,6 +151,14 @@
               <button onclick="resetRetention()" style="background:transparent; border:1px solid #ccc; color:#7f8c8d; width:auto; font-size:11px; padding:4px 12px; border-radius:4px;">↺ F2自動算出に戻す (3・4回目も初期値へ)</button>
             </div>
           </div>
+
+          <div class="section-title">販売サイクル (リピート間隔)</div>
+          <div class="form-grid" style="margin-bottom: 15px;">
+            <div class="form-group"><label>F2 (初回→2回目)</label><div style="display:flex;align-items:center;gap:5px;"><input type="number" id="f2_days" value="30" style="width:70px;"> <span>日後</span></div></div>
+            <div class="form-group"><label>F3以降 (2回目以降)</label><div style="display:flex;align-items:center;gap:5px;"><input type="number" id="f3_days" value="30" style="width:70px;"> <span>日間隔</span></div></div>
+          </div>
+
+          <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
 
           <div class="section-title">ロジック詳細</div>
           <div class="form-grid">
@@ -393,7 +400,7 @@ let calcTimer;
 document.getElementById('tab_edit').addEventListener('input', (e) => {
   if(['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) {
     clearTimeout(calcTimer);
-    calcTimer = setTimeout(() => { calculate(); }, 400); // 400msデバウンスでサクサク計算
+    calcTimer = setTimeout(() => { calculate(); }, 400); // 400msデバウンス
   }
 });
 document.getElementById('tab_edit').addEventListener('change', (e) => { calculate(); });
@@ -407,7 +414,7 @@ function renderChart(res, prefix = "") {
   
   const labels = Array.from({length: 60}, (_, i) => (i + 1) + '月');
   const profitData = res.monthlyLog.map(m => m.prof);
-  const cumCFData = res.monthlyCF_full.map(m => m.cumCF); // 60ヶ月分のCFデータ
+  const cumCFData = res.monthlyCF_full.map(m => m.cumCF);
 
   charts[chartKey] = new Chart(ctx, {
     type: 'line',
@@ -433,8 +440,8 @@ function renderChart(res, prefix = "") {
 function distribute(amount, delayDays, targetArray, startMonth) {
   const md = Math.floor(delayDays / 30), r = (delayDays % 30) / 30;
   const m1 = startMonth + md, m2 = m1 + 1;
-  if (m1 < 62) targetArray[m1] = (targetArray[m1] || 0) + (amount * (1 - r));
-  if (m2 < 62) targetArray[m2] = (targetArray[m2] || 0) + (amount * r);
+  if (m1 < 65) targetArray[m1] = (targetArray[m1] || 0) + (amount * (1 - r));
+  if (m2 < 65) targetArray[m2] = (targetArray[m2] || 0) + (amount * r);
 }
 
 function runSimulationEngine(data) {
@@ -446,6 +453,9 @@ function runSimulationEngine(data) {
   const alpha = data.category ? Number(data.category) : 0.65;
   const isExisting = data.brand_power === true;
   const isAuto = data.autoF2Mode !== false;
+
+  const f2_days = getNumFromData(data, 'f2_days', 30);
+  const f3_days = getNumFromData(data, 'f3_days', 30);
 
   let curRet = [...masterRet];
   curRet[2] = getNumFromData(data, 'ret_3', 81); curRet[3] = getNumFromData(data, 'ret_4', 75);
@@ -460,22 +470,41 @@ function runSimulationEngine(data) {
   let coD = data.cf_custom ? getNumFromData(data,'cf_cost',30) : 30;
 
   let res = { tProf:0, bep:0, peakMin:0, tRev:0, yearly:Array.from({length: 5}, () => ({rev: 0, prof: 0, new: 0})), monthlyLog:[], monthlyCF:[], monthlyCF_full:[], cfInflow:new Array(65).fill(0), cfOutflow:new Array(65).fill(0), margin: (p1-(f_q*f_c))+((p2-(r_q*r_c))*3), params: { p1, p2, cpa, f_c, r_c, fixed } };
+  
+  // ▼▼ 日数ベースのコホート按分ロジック ▼▼
+  let m_new = new Array(120).fill(0);
+  let m_rep = new Array(120).fill(0);
+  
+  for(let p=0; p<60; p++){
+    let curNew = newUsers[p];
+    m_new[p] += curNew;
+    
+    let f2_rate = isAuto ? Math.max((isExisting ? 55 : (p >= 36 ? 55 : (p >= 12 ? 52 : 45))) * Math.pow(p2 / p1, -alpha), 10.0) : getNumFromData(data, 'ret_2', 82);
+    
+    let surv = curNew;
+    for(let k=1; k<60; k++){
+      let retRate = (k===1) ? f2_rate : curRet[Math.min(k, 59)];
+      surv *= (retRate / 100);
+      
+      let elapsed_months = (f2_days + f3_days * (k - 1)) / 30;
+      let t = p + elapsed_months;
+      
+      if (t >= 60) continue; 
+      
+      let m1 = Math.floor(t);
+      let r = t - m1;
+      if (m1 < 60) m_rep[m1] += surv * (1 - r);
+      if (m1 + 1 < 60) m_rep[m1 + 1] += surv * r;
+    }
+  }
+  // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+
   let cumCF = 0;
   let cumShip = 0;
 
   for(let m=0; m<60; m++){
-    let curNew = newUsers[m], curRep = 0;
-    for(let p=0; p<m; p++){
-      let f2_rate;
-      if (!isAuto) { f2_rate = getNumFromData(data, 'ret_2', 82); } 
-      else {
-        let c_base = isExisting ? 55 : (p >= 36 ? 55 : (p >= 12 ? 52 : 45));
-        f2_rate = Math.max(c_base * Math.pow(p2 / p1, -alpha), 10.0);
-      }
-      let surv = newUsers[p];
-      for(let s=1; s<=(m-p); s++) surv *= (s===1 ? f2_rate : curRet[Math.min(s, 59)])/100;
-      curRep += surv;
-    }
+    let curNew = m_new[m];
+    let curRep = m_rep[m];
     let shipQty = (curNew * f_q) + (curRep * r_q);
     cumShip += shipQty;
 
@@ -541,7 +570,6 @@ function renderTables(res, prefix = "") {
   });
   document.getElementById(prefix+'m_body').innerHTML = mBody;
 
-  // グラフの描画
   renderChart(res, prefix);
 }
 
@@ -635,7 +663,7 @@ function runIntegration() {
     }
   });
 
-  if(validResults.length === 0) return; // 何も選択されていない場合は何もしない
+  if(validResults.length === 0) return;
 
   let intRes = { tProf:0, bep:0, peakMin:0, tRev:0, yearly:Array.from({length:5},()=>({rev:0,prof:0,new:0})), monthlyLog:Array.from({length:60},()=>({new:0,rep:0,ship:0,cumShip:0,rev:0,prof:0,cumProf:0})), monthlyCF:Array.from({length:24},()=>({flow:0,cumCF:0})), monthlyCF_full:Array.from({length:60},()=>({flow:0,cumCF:0})), cfInflow:new Array(65).fill(0), cfOutflow:new Array(65).fill(0) };
   
@@ -678,7 +706,7 @@ function saveIntegrationAsPlan() {
   const configs = window.integratedStats.configs, results = window.integratedStats.individualResults;
   
   let totalUsersAll = 0, sumFixed = 0, wPrice = 0, wCpa = 0, wCost = 0;
-  let wRet2 = 0, wRet3 = 0, wRet4 = 0; // 加重平均用バグ修正
+  let wRet2 = 0, wRet3 = 0, wRet4 = 0, wF2days = 0, wF3days = 0; 
   let newM = Array(25).fill(0);
 
   configs.forEach((cfg, idx) => {
@@ -689,10 +717,11 @@ function saveIntegrationAsPlan() {
       wPrice += getNumFromData(cfg, 'f_price', 3000) * tNew;
       wCpa += getNumFromData(cfg, 'cpa', 5000) * tNew;
       wCost += getNumFromData(cfg, 'f_cost', 1600) * tNew;
-      // 継続率の加重平均加算
       wRet2 += getNumFromData(cfg, 'ret_2', 82) * tNew;
       wRet3 += getNumFromData(cfg, 'ret_3', 81) * tNew;
       wRet4 += getNumFromData(cfg, 'ret_4', 75) * tNew;
+      wF2days += getNumFromData(cfg, 'f2_days', 30) * tNew;
+      wF3days += getNumFromData(cfg, 'f3_days', 30) * tNew;
     }
     for(let i=1; i<=24; i++) newM[i] += getNumFromData(cfg, `m${i}`, 0);
   });
@@ -700,11 +729,13 @@ function saveIntegrationAsPlan() {
   if(totalUsersAll > 0) { 
     wPrice /= totalUsersAll; wCpa /= totalUsersAll; wCost /= totalUsersAll; 
     wRet2 /= totalUsersAll; wRet3 /= totalUsersAll; wRet4 /= totalUsersAll; 
+    wF2days /= totalUsersAll; wF3days /= totalUsersAll;
   } else {
-    // 獲得人数が0の場合は最初の設定をフォールバック
     wRet2 = getNumFromData(configs[0], 'ret_2', 82);
     wRet3 = getNumFromData(configs[0], 'ret_3', 81);
     wRet4 = getNumFromData(configs[0], 'ret_4', 75);
+    wF2days = getNumFromData(configs[0], 'f2_days', 30);
+    wF3days = getNumFromData(configs[0], 'f3_days', 30);
   }
 
   let newConfig = Object.assign({}, configs[0]);
@@ -713,13 +744,14 @@ function saveIntegrationAsPlan() {
   newConfig.f_cost = Math.round(wCost); newConfig.r_cost = Math.round(wCost);
   newConfig.fixed_cost = Math.round(sumFixed);
   
-  // 修正した継続率をセット
   newConfig.ret_2 = wRet2.toFixed(1);
   newConfig.ret_3 = wRet3.toFixed(1);
   newConfig.ret_4 = wRet4.toFixed(1);
+  newConfig.f2_days = Math.round(wF2days);
+  newConfig.f3_days = Math.round(wF3days);
   
   for(let i=1; i<=24; i++) newConfig[`m${i}`] = newM[i];
-  newConfig.autoF2Mode = false; // 統合後は手動モードで固定
+  newConfig.autoF2Mode = false; 
 
   localStorage.setItem('d2c_snap_' + target, JSON.stringify(newConfig));
   alert(`統合結果を ${target} に加重平均パラメータとして保存しました！\n※詳細な分析のために[単一プラン編集]タブで確認できます。`);
@@ -769,7 +801,8 @@ function downloadCSV(yTable, mTable, filename) {
     const labelMap = {
       f_price: "初回販売価格(円)", r_price: "定期販売価格(円)", f_cost: "初回変動費(円)", cpa: "新規獲得CPA(円)",
       ret_2: "2回目継続率(%)", fixed_cost: "月次固定費(円)", crm_rate: "CRM費(%)", ret_3: "3回目継続率(%)",
-      ret_4: "4回目継続率(%)", r_cost: "定期変動費(円)", f_qty: "初回個数", r_qty: "定期個数",
+      ret_4: "4回目継続率(%)", f2_days: "F2スパン(日後)", f3_days: "F3以降スパン(日間隔)",
+      r_cost: "定期変動費(円)", f_qty: "初回個数", r_qty: "定期個数",
       cf_in: "入金サイクル(日後)", cf_ad: "広告支払(日後)", cf_cost: "変動費支払(日後)"
     };
     Object.keys(labelMap).forEach(k => { settingsRows.push(`"${labelMap[k]}","${data[k] !== undefined ? data[k] : ''}"`); });
@@ -798,7 +831,7 @@ function downloadCSV(yTable, mTable, filename) {
     if(!tbl) return rs;
     tbl.querySelectorAll('tr').forEach(tr => {
       let r = []; 
-      tr.querySelectorAll('th, td').forEach(td => { r.push('"' + td.innerText.replace(/,/g,"").replace(/¥/g,"").replace(/人/g,"").replace(/個/g,"") + '"'); });
+      tr.querySelectorAll('th, td').forEach(td => { r.push('"' + (td.textContent || "").trim().replace(/,/g,"").replace(/¥/g,"").replace(/人/g,"").replace(/個/g,"") + '"'); });
       rs.push(r.join(","));
     });
     return rs;
