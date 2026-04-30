@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>D2C Strategy Dashboard - Portfolio</title>
+  <title>D2C Strategy Dashboard - Portfolio V6</title>
   <style>
     :root {
       --primary: #2c3e50; --accent: #3498db; --success: #27ae60;
@@ -12,7 +12,6 @@
     }
     body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: var(--bg); color: var(--primary); margin: 0; padding: 15px; font-size: 14px; }
     
-    /* ヘッダー・タブ */
     header { margin-bottom: 20px; }
     .header-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: 10px; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;}
     h1 { margin: 0; font-size: 20px; }
@@ -23,12 +22,10 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* レイアウト */
     .container { max-width: 1300px; margin: 0 auto; display: flex; align-items: flex-start; gap: 20px; padding-top: 15px; }
     .main-content { flex: 1; min-width: 0; }
     .sidebar { flex: 0 0 340px; position: sticky; top: 20px; z-index: 100;}
     
-    /* カード・UIパーツ */
     .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 4px solid var(--accent); }
     .card h3 { margin-top: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; }
     .section-title { font-size: 12px; color: #7f8c8d; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
@@ -54,7 +51,6 @@
     .btn-csv { background: #e0e6ed; color: #333; }
     button:hover { opacity: 0.9; transform: translateY(-1px); }
 
-    /* テーブル */
     .table-wrapper { overflow-x: auto; background: #fff; border-radius: 8px; margin-top: 10px; }
     table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 600px; white-space: nowrap; }
     th, td { border: 1px solid #eee; padding: 10px 8px; text-align: right; }
@@ -64,7 +60,6 @@
     .neg { color: var(--danger); font-weight: bold; }
     .peak-row { background-color: #fff9e6 !important; }
 
-    /* 入力マス */
     .month-inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 6px; }
     .m-box { background: #f9f9f9; padding: 6px; border-radius: 4px; border: 1px solid #ddd; text-align: center; }
     .m-box input { width: 100%; border: none; background: transparent; text-align: center; font-weight: bold; font-size: 16px; padding: 0; }
@@ -73,7 +68,6 @@
     details { background: #fff; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ccc; }
     summary { padding: 15px; font-weight: bold; cursor: pointer; color: var(--accent); }
 
-    /* AI評価エリア */
     .ai-eval { background: #f0edff; border: 1px solid #dcd6ff; border-radius: 8px; padding: 15px; margin-top: 20px; display: none; font-size: 13px; line-height: 1.6; }
     .ai-score-board { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid #dcd6ff; padding-bottom: 10px; }
     .ai-score { font-size: 32px; font-weight: bold; color: #6c5ce7; }
@@ -82,7 +76,6 @@
     .ai-metric-label { font-weight: bold; color: #555; }
     .ai-comment { font-size: 14px; color: #333; padding: 10px; background: #fff; border-left: 4px solid #6c5ce7; border-radius: 4px; }
 
-    /* 統合分析専用スタイル */
     .integration-checkboxes { display: flex; gap: 15px; flex-wrap: wrap; background: #fdfdfd; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px; }
     .integration-checkboxes label { font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; }
     .integration-checkboxes input[type="checkbox"] { transform: scale(1.3); }
@@ -123,7 +116,6 @@
       <div class="card">
         <h3>🛒 販売・単価・CPA</h3>
         <div class="form-grid">
-          
           <div style="grid-column: 1 / -1; background: #fdfdfd; padding: 12px; border-radius: 8px; border: 1px dashed #b2bec3; margin-bottom: 10px;">
             <label style="color: var(--primary); font-weight:bold; font-size:12px; display:block; margin-bottom:8px;">🛠 F2転換率算出モデル設定</label>
             <div style="display:flex; flex-wrap:wrap; gap:15px; font-size:13px; margin-bottom: 10px;">
@@ -199,7 +191,7 @@
       </div>
 
       <details>
-        <summary>🔍 詳細推移データ (月次・キャッシュフロー詳細)</summary>
+        <summary>🔍 詳細推移データ (月次・販売個数・キャッシュフロー詳細)</summary>
         <div class="table-wrapper"><table id="monthly_table"><thead><tr id="m_header"><th class="row-header">項目</th></tr></thead><tbody id="m_body"></tbody></table></div>
       </details>
     </div>
@@ -211,7 +203,7 @@
         <div class="stat-card"><span class="stat-label">投資回収 (損益BEP)</span><span class="stat-val" id="res_bep" style="color:var(--accent);">- ヶ月</span></div>
         <button class="btn-calc" onclick="calculate()">シミュレーション実行</button>
         <button class="btn-ai" onclick="runAIEvaluation('single')">✨ AIプラン評価</button>
-        <button class="btn-csv" onclick="downloadCSV('yearly_table', 'monthly_table', 'd2c_plan.csv')">CSVで保存</button>
+        <button class="btn-csv" onclick="downloadCSV('yearly_table', 'monthly_table', 'd2c_plan_report.csv')">CSVレポート保存</button>
       </div>
     </div>
   </div>
@@ -268,14 +260,13 @@
         <div class="stat-card peak"><span class="stat-label">連結 最大必要資金 (ピーク)</span><span class="stat-val" id="int_res_peak" style="color:var(--warning);">¥0</span></div>
         <div class="stat-card"><span class="stat-label">連結 投資回収 (BEP)</span><span class="stat-val" id="int_res_bep" style="color:var(--accent);">- ヶ月</span></div>
         <button class="btn-ai" onclick="runIntegrationAI()">✨ 連結ポートフォリオ評価</button>
-        <button class="btn-csv" onclick="downloadCSV('int_yearly_table', 'int_monthly_table', 'd2c_integrated.csv')">連結CSV出力</button>
+        <button class="btn-csv" onclick="downloadCSV('int_yearly_table', 'int_monthly_table', 'd2c_integrated_report.csv')">連結CSVレポート出力</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-// --- 基本UI処理 ---
 function switchTab(tabId) {
   document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -296,7 +287,6 @@ function getVal(id) { const el = document.getElementById(id); return el ? (Numbe
 
 const masterRet = [100, 82, 81, 75, 85, 95, 95.25, 95.5, 95.75, 96, 96.25, 96.5, 95.76, 95.02, 94.28, 93.54, 92.8, 92.06, 91.41, 90.75, 90.1, 89.44, 88.79, 88.13, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.57, 91.57, 91.57, 91.58, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5];
 
-// --- 初期描画 ---
 const container = document.getElementById('months_container');
 const m_header = document.getElementById('m_header');
 const int_m_header = document.getElementById('int_m_header');
@@ -306,7 +296,6 @@ for(let i=1; i<=24; i++){
   int_m_header.innerHTML += `<th>${i}月</th>`;
 }
 
-// --- F2自動算出モデル ---
 let autoF2Mode = true;
 function setAutoF2(isAuto) {
   autoF2Mode = isAuto;
@@ -358,7 +347,6 @@ function applyQuarters() {
   }
 }
 
-// --- 計算コアエンジン ---
 function distribute(amount, delayDays, targetArray, startMonth) {
   const md = Math.floor(delayDays / 30), r = (delayDays % 30) / 30;
   const m1 = startMonth + md, m2 = m1 + 1;
@@ -366,7 +354,6 @@ function distribute(amount, delayDays, targetArray, startMonth) {
   if (m2 < 62) targetArray[m2] = (targetArray[m2] || 0) + (amount * r);
 }
 
-// パース関数：保存データ(dict)から数値を安全に取り出す
 function getNumFromData(data, key, def) { return data && data[key] !== undefined ? Number(String(data[key]).replace(/,/g, '')) || 0 : def; }
 
 function runSimulationEngine(data) {
@@ -377,7 +364,7 @@ function runSimulationEngine(data) {
   
   const alpha = data.category ? Number(data.category) : 0.65;
   const isExisting = data.brand_power === true;
-  const isAuto = data.autoF2Mode !== false; // default true
+  const isAuto = data.autoF2Mode !== false;
 
   let curRet = [...masterRet];
   curRet[2] = getNumFromData(data, 'ret_3', 81); curRet[3] = getNumFromData(data, 'ret_4', 75);
@@ -393,6 +380,7 @@ function runSimulationEngine(data) {
 
   let res = { tProf:0, bep:0, peakMin:0, tRev:0, yearly:Array.from({length: 5}, () => ({rev: 0, prof: 0, new: 0})), monthlyLog:[], monthlyCF:[], cfInflow:new Array(65).fill(0), cfOutflow:new Array(65).fill(0), margin: (p1-(f_q*f_c))+((p2-(r_q*r_c))*3), params: { p1, p2, cpa, f_c, r_c, fixed } };
   let cumCF = 0;
+  let cumShip = 0;
 
   for(let m=0; m<60; m++){
     let curNew = newUsers[m], curRep = 0;
@@ -407,6 +395,9 @@ function runSimulationEngine(data) {
       for(let s=1; s<=(m-p); s++) surv *= (s===1 ? f2_rate : curRet[Math.min(s, 59)])/100;
       curRep += surv;
     }
+    let shipQty = (curNew * f_q) + (curRep * r_q);
+    cumShip += shipQty;
+
     let rev = (curNew * p1) + (curRep * p2), cost = (curNew * f_q * f_c) + (curRep * r_q * r_c), ad = curNew * cpa;
     let prof = rev - cost - ad - (rev * crm) - fixed;
 
@@ -415,7 +406,7 @@ function runSimulationEngine(data) {
     res.yearly[Math.floor(m / 12)].rev += rev; res.yearly[Math.floor(m / 12)].prof += prof; res.yearly[Math.floor(m / 12)].new += curNew;
 
     distribute(rev, inD, res.cfInflow, m); distribute(ad, adD, res.cfOutflow, m); distribute(cost + (rev * crm) + fixed, coD, res.cfOutflow, m);
-    res.monthlyLog.push({ new: curNew, rep: curRep, rev: rev, prof: prof, cumProf: res.tProf });
+    res.monthlyLog.push({ new: curNew, rep: curRep, ship: shipQty, cumShip: cumShip, rev: rev, prof: prof, cumProf: res.tProf });
   }
 
   for(let m=0; m<60; m++){
@@ -427,7 +418,6 @@ function runSimulationEngine(data) {
   return res;
 }
 
-// UI更新処理
 function renderTables(res, prefix = "") {
   const fmt = n => Math.round(n).toLocaleString();
   document.getElementById(prefix+'res_y5').innerText = "¥" + fmt(res.tProf);
@@ -449,18 +439,20 @@ function renderTables(res, prefix = "") {
   document.getElementById(prefix+'yearly_body').innerHTML = yBody;
 
   let mBody = "";
-  const labels = ["新規数","リピート数","単月売上","単月損益","累計損益","単月CF","累計CF"];
+  const labels = ["新規数","リピート数","単月販売個数","累計販売個数","単月売上","単月損益","累計損益","単月CF","累計CF"];
   labels.forEach((label, idx) => {
-    mBody += `<tr><td class="row-header ${idx>=5?'peak-row':''}">${label}</td>`;
+    mBody += `<tr><td class="row-header ${idx>=7?'peak-row':''}">${label}</td>`;
     for(let m=0; m<24; m++){
       let val, cls = "";
       if(idx===0) val = fmt(res.monthlyLog[m].new);
       if(idx===1) val = fmt(res.monthlyLog[m].rep);
-      if(idx===2) val = "¥"+fmt(res.monthlyLog[m].rev);
-      if(idx===3) { val = "¥"+fmt(res.monthlyLog[m].prof); cls = res.monthlyLog[m].prof<0?'neg':'pos'; }
-      if(idx===4) { val = "¥"+fmt(res.monthlyLog[m].cumProf); cls = res.monthlyLog[m].cumProf<0?'neg':'pos'; }
-      if(idx===5) { val = "¥"+fmt(res.monthlyCF[m].flow); cls = res.monthlyCF[m].flow<0?'neg':'pos'; }
-      if(idx===6) { val = "¥"+fmt(res.monthlyCF[m].cumCF); cls = res.monthlyCF[m].cumCF<0?'neg':'pos'; }
+      if(idx===2) val = fmt(res.monthlyLog[m].ship);
+      if(idx===3) val = fmt(res.monthlyLog[m].cumShip);
+      if(idx===4) val = "¥"+fmt(res.monthlyLog[m].rev);
+      if(idx===5) { val = "¥"+fmt(res.monthlyLog[m].prof); cls = res.monthlyLog[m].prof<0?'neg':'pos'; }
+      if(idx===6) { val = "¥"+fmt(res.monthlyLog[m].cumProf); cls = res.monthlyLog[m].cumProf<0?'neg':'pos'; }
+      if(idx===7) { val = "¥"+fmt(res.monthlyCF[m].flow); cls = res.monthlyCF[m].flow<0?'neg':'pos'; }
+      if(idx===8) { val = "¥"+fmt(res.monthlyCF[m].cumCF); cls = res.monthlyCF[m].cumCF<0?'neg':'pos'; }
       mBody += `<td class="${cls}">${val}</td>`;
     }
     mBody += `</tr>`;
@@ -468,9 +460,6 @@ function renderTables(res, prefix = "") {
   document.getElementById(prefix+'m_body').innerHTML = mBody;
 }
 
-// ------------------------------------
-// モード１：単体プラン計算
-// ------------------------------------
 function getFormData() {
   const inputs = document.querySelectorAll('#tab_edit input.num-input, #tab_edit input[type="number"], #tab_edit input[type="checkbox"], #tab_edit input[type="radio"]:checked');
   const data = { autoF2Mode: autoF2Mode };
@@ -478,7 +467,6 @@ function getFormData() {
     if(el.type === 'checkbox' || el.type === 'radio') data[el.id] = el.checked;
     else data[el.id] = el.value.replace(/,/g, '');
   });
-  // ラジオボタンのvalueを取得
   const cat = document.querySelector('input[name="category"]:checked');
   if(cat) data.category = cat.value;
   return data;
@@ -487,7 +475,7 @@ function getFormData() {
 function calculate() {
   const data = getFormData();
   const res = runSimulationEngine(data);
-  window.simStats = res; // AI用
+  window.simStats = res;
   renderTables(res, "");
   saveCurrent();
 }
@@ -523,21 +511,10 @@ function loadSnapshot() {
   calculate();
 }
 
-// ------------------------------------
-// モード２：統合分析 (ポートフォリオ)
-// ------------------------------------
-let lastIntegratedData = null; // 上書き保存用
-
+// --- 統合分析 ---
 function runIntegration() {
-  const keys = [
-    { id: 'chk_current', key: 'd2c_current_config' },
-    { id: 'chk_plan_a', key: 'd2c_snap_plan_a' },
-    { id: 'chk_plan_b', key: 'd2c_snap_plan_b' },
-    { id: 'chk_plan_c', key: 'd2c_snap_plan_c' }
-  ];
-  
-  let validResults = [];
-  let validConfigs = [];
+  const keys = [{ id: 'chk_current', key: 'd2c_current_config' }, { id: 'chk_plan_a', key: 'd2c_snap_plan_a' }, { id: 'chk_plan_b', key: 'd2c_snap_plan_b' }, { id: 'chk_plan_c', key: 'd2c_snap_plan_c' }];
+  let validResults = [], validConfigs = [];
 
   keys.forEach(k => {
     if(document.getElementById(k.id).checked) {
@@ -550,19 +527,17 @@ function runIntegration() {
     }
   });
 
-  if(validResults.length === 0) {
-    alert("統合するプランが選択されていないか、保存されていません。");
-    return;
-  }
+  if(validResults.length === 0) return alert("統合するプランが選択されていないか、保存されていません。");
 
-  // 統合（合算）処理
-  let intRes = { tProf:0, bep:0, peakMin:0, tRev:0, yearly:Array.from({length:5},()=>({rev:0,prof:0,new:0})), monthlyLog:Array.from({length:60},()=>({new:0,rep:0,rev:0,prof:0,cumProf:0})), monthlyCF:Array.from({length:24},()=>({flow:0,cumCF:0})), cfInflow:new Array(65).fill(0), cfOutflow:new Array(65).fill(0) };
+  let intRes = { tProf:0, bep:0, peakMin:0, tRev:0, yearly:Array.from({length:5},()=>({rev:0,prof:0,new:0})), monthlyLog:Array.from({length:60},()=>({new:0,rep:0,ship:0,cumShip:0,rev:0,prof:0,cumProf:0})), monthlyCF:Array.from({length:24},()=>({flow:0,cumCF:0})), cfInflow:new Array(65).fill(0), cfOutflow:new Array(65).fill(0) };
   
   let cumCF = 0;
   for(let m=0; m<60; m++) {
     validResults.forEach(r => {
       intRes.monthlyLog[m].new += r.monthlyLog[m].new;
       intRes.monthlyLog[m].rep += r.monthlyLog[m].rep;
+      intRes.monthlyLog[m].ship += r.monthlyLog[m].ship;
+      intRes.monthlyLog[m].cumShip += r.monthlyLog[m].cumShip;
       intRes.monthlyLog[m].rev += r.monthlyLog[m].rev;
       intRes.monthlyLog[m].prof += r.monthlyLog[m].prof;
       intRes.cfInflow[m] += r.cfInflow[m];
@@ -591,13 +566,9 @@ function runIntegration() {
 function saveIntegrationAsPlan() {
   if(!window.integratedStats || window.integratedStats.configs.length === 0) return alert("先に統合計算を実行してください。");
   const target = document.getElementById('int_save_target').value;
-  
-  // 重み付け平均ロジック (獲得人数で重み付け)
-  const configs = window.integratedStats.configs;
-  const results = window.integratedStats.individualResults;
+  const configs = window.integratedStats.configs, results = window.integratedStats.individualResults;
   
   let totalUsersAll = 0, sumFixed = 0, wPrice = 0, wCpa = 0, wCost = 0;
-  
   let newM = Array(25).fill(0);
 
   configs.forEach((cfg, idx) => {
@@ -614,16 +585,13 @@ function saveIntegrationAsPlan() {
 
   if(totalUsersAll > 0) { wPrice /= totalUsersAll; wCpa /= totalUsersAll; wCost /= totalUsersAll; }
 
-  // 新しいコンフィグを作成
-  let newConfig = Object.assign({}, configs[0]); // ベースコピー
-  newConfig.f_price = Math.round(wPrice); newConfig.r_price = Math.round(wPrice); // 簡単のため同じにする
+  let newConfig = Object.assign({}, configs[0]);
+  newConfig.f_price = Math.round(wPrice); newConfig.r_price = Math.round(wPrice);
   newConfig.cpa = Math.round(wCpa);
   newConfig.f_cost = Math.round(wCost); newConfig.r_cost = Math.round(wCost);
   newConfig.fixed_cost = Math.round(sumFixed);
   for(let i=1; i<=24; i++) newConfig[`m${i}`] = newM[i];
-  
-  // フラグ類リセット
-  newConfig.autoF2Mode = false; // 加重平均で計算が狂うので手動モード化
+  newConfig.autoF2Mode = false;
 
   localStorage.setItem('d2c_snap_' + target, JSON.stringify(newConfig));
   alert(`統合結果を ${target} に加重平均パラメータとして保存しました！\n※詳細な分析のために[単一プラン編集]タブで確認できます。`);
@@ -631,36 +599,24 @@ function saveIntegrationAsPlan() {
 
 function runIntegrationAI() {
   if(!window.integratedStats) return alert("先に統合計算を実行してください。");
-  const intRes = window.integratedStats.res;
-  const indRes = window.integratedStats.individualResults;
-
+  const intRes = window.integratedStats.res, indRes = window.integratedStats.individualResults;
   let sumIndividualPeaks = 0;
   indRes.forEach(r => sumIndividualPeaks += r.peakMin);
 
-  let synergy = sumIndividualPeaks - intRes.peakMin; // マイナス値の差分 (例: -100 - (-80) = -20 つまり20浮いた)
-  
-  let comment = "";
-  if(synergy < -100000) {
-    comment = `【💰 ポートフォリオ効果あり】<br>各プランを単体で実行した場合の最大資金は合計 <strong>${Math.abs(sumIndividualPeaks).toLocaleString()}円</strong> ですが、統合によりキャッシュの凹みが相殺され、必要な資金を <strong>${Math.abs(intRes.peakMin).toLocaleString()}円</strong> に抑えられています。（約 ${Math.abs(synergy).toLocaleString()}円 のシナジー効果）`;
-  } else {
-    comment = `【⚠️ リスク集中に注意】<br>プラン同士でキャッシュアウトのタイミングが重なっており、相殺効果（シナジー）は発生していません。最大で <strong>${Math.abs(intRes.peakMin).toLocaleString()}円</strong> の資金投下が必要です。獲得開始月を意図的にズラすことで、ピーク資金を抑えられる可能性があります。`;
-  }
+  let synergy = sumIndividualPeaks - intRes.peakMin; 
+  let comment = synergy < -100000 
+    ? `【💰 ポートフォリオ効果あり】<br>各プランを単体で実行した場合の最大資金は合計 <strong>${Math.abs(sumIndividualPeaks).toLocaleString()}円</strong> ですが、統合によりキャッシュの凹みが相殺され、必要な資金を <strong>${Math.abs(intRes.peakMin).toLocaleString()}円</strong> に抑えられています。（約 ${Math.abs(synergy).toLocaleString()}円 のシナジー効果）`
+    : `【⚠️ リスク集中に注意】<br>プラン同士でキャッシュアウトのタイミングが重なっており、相殺効果（シナジー）は発生していません。最大で <strong>${Math.abs(intRes.peakMin).toLocaleString()}円</strong> の資金投下が必要です。獲得開始月を意図的にズラすことで、ピーク資金を抑えられる可能性があります。`;
 
   const evalBox = document.getElementById('ai_eval_int');
   evalBox.style.display = "block";
-  evalBox.innerHTML = `
-    <div style="font-weight:bold; margin-bottom:10px; font-size:14px; color:#9b59b6;">🤖 統合ポートフォリオ AI 診断</div>
-    <div class="ai-comment" style="border-left-color:#9b59b6;">${comment}</div>
-  `;
+  evalBox.innerHTML = `<div style="font-weight:bold; margin-bottom:10px; font-size:14px; color:#9b59b6;">🤖 統合ポートフォリオ AI 診断</div><div class="ai-comment" style="border-left-color:#9b59b6;">${comment}</div>`;
 }
 
-// --- 単一プラン用AI評価 ---
 function runAIEvaluation() {
   const cpa = getVal('cpa'), ret2 = getVal('ret_2');
-  const bep = window.simStats.bep || 999;
-  const profitMargin = window.simStats.tRev > 0 ? (window.simStats.tProf / window.simStats.tRev) * 100 : 0;
-  const peak = Math.abs(window.simStats.peakMin);
-  const marginTolerance = window.simStats.margin;
+  const bep = window.simStats.bep || 999, profitMargin = window.simStats.tRev > 0 ? (window.simStats.tProf / window.simStats.tRev) * 100 : 0;
+  const peak = Math.abs(window.simStats.peakMin), marginTolerance = window.simStats.margin;
 
   let totalScore = 0;
   let e1 = bep <= 12 ? { s: 20, t: "◎ 優秀", m: "1年以内回収" } : (bep <= 24 ? { s: 10, t: "〇 標準", m: "2年以内回収" } : { s: 0, t: "△ 課題", m: "回収長期化" });
@@ -677,18 +633,75 @@ function runAIEvaluation() {
   evalBox.innerHTML = `<div style="font-weight:bold; margin-bottom:15px; font-size:14px;">🤖 経営シミュレーション AI 診断結果</div><div class="ai-score-board"><div style="font-size:12px; color:#555;">総合スコア</div><div class="ai-score">${totalScore} / 100 点</div></div><div class="ai-metrics"><div class="ai-metric-item"><span class="ai-metric-label">1. 投資回収スピード</span><span class="ai-metric-val" style="color:${e1.s>=10?'#27ae60':'#e74c3c'}">${e1.t} (${e1.m})</span></div><div class="ai-metric-item"><span class="ai-metric-label">2. 初期顧客定着率</span><span class="ai-metric-val" style="color:${e2.s>=10?'#27ae60':'#e74c3c'}">${e2.t} (${e2.m})</span></div><div class="ai-metric-item"><span class="ai-metric-label">3. 長期収益性</span><span class="ai-metric-val" style="color:${e3.s>=10?'#27ae60':'#e74c3c'}">${e3.t} (${e3.m})</span></div><div class="ai-metric-item"><span class="ai-metric-label">4. 資金効率</span><span class="ai-metric-val" style="color:${e4.s>=10?'#27ae60':'#f39c12'}">${e4.t} (${e4.m})</span></div><div class="ai-metric-item"><span class="ai-metric-label">5. CPA高騰耐性</span><span class="ai-metric-val" style="color:${e5.s>=10?'#27ae60':'#e74c3c'}">${e5.t} (${e5.m})</span></div></div><div class="ai-comment">${advice}</div>`;
 }
 
+// レポート全体のCSVダウンロード改修
 function downloadCSV(yTable, mTable, filename) {
+  const isIntegrated = filename.includes('integrated');
+
+  // 1. 設定内容の取得
+  let settingsRows = ["--- 設定内容 ---"];
+  if (!isIntegrated) {
+    const data = getFormData();
+    const labelMap = {
+      f_price: "初回販売価格(円)", r_price: "定期販売価格(円)", f_cost: "初回変動費(円)", cpa: "新規獲得CPA(円)",
+      ret_2: "2回目継続率(%)", fixed_cost: "月次固定費(円)", crm_rate: "CRM費(%)", ret_3: "3回目継続率(%)",
+      ret_4: "4回目継続率(%)", r_cost: "定期変動費(円)", f_qty: "初回個数", r_qty: "定期個数",
+      cf_in: "入金サイクル(日後)", cf_ad: "広告支払(日後)", cf_cost: "変動費支払(日後)"
+    };
+    Object.keys(labelMap).forEach(k => {
+      settingsRows.push(`"${labelMap[k]}","${data[k] !== undefined ? data[k] : ''}"`);
+    });
+    settingsRows.push(`"F2算出カテゴリ","${data.category === '0.65' ? 'ヘアケア' : data.category === '0.7' ? 'スキンケア' : 'その他'}"`);
+    settingsRows.push(`"既存ブランド","${data.brand_power ? 'はい' : 'いいえ'}"`);
+    settingsRows.push(`"25ヶ月以降減衰","${data.auto_decay ? 'はい' : 'いいえ'}"`);
+  } else {
+    settingsRows.push(`"対象プラン","統合分析ポートフォリオ"`);
+    const checked = [];
+    if(document.getElementById('chk_current').checked) checked.push("現在の設定");
+    if(document.getElementById('chk_plan_a').checked) checked.push("プラン A");
+    if(document.getElementById('chk_plan_b').checked) checked.push("プラン B");
+    if(document.getElementById('chk_plan_c').checked) checked.push("プラン C");
+    settingsRows.push(`"選択されたプラン","${checked.join(' / ')}"`);
+  }
+
+  // 2. AIコメントの取得
+  let aiRows = ["--- AIプラン評価 ---"];
+  const aiBoxId = isIntegrated ? 'ai_eval_int' : 'ai_eval';
+  const aiBox = document.getElementById(aiBoxId);
+  if (aiBox && aiBox.style.display === "block") {
+    let aiText = aiBox.innerText.replace(/"/g, '""');
+    aiRows.push(`"${aiText}"`);
+  } else {
+    aiRows.push(`"AI評価はまだ実行されていません"`);
+  }
+
+  // テーブル取得用ヘルパー
   const getD = id => {
     let rs = [];
-    document.getElementById(id).querySelectorAll('tr').forEach(tr => {
-      let r = []; tr.querySelectorAll('th, td').forEach(td => r.push('"' + td.innerText.replace(/,/g,"").replace(/¥/g,"").replace(/人/g,"").replace(/個/g,"") + '"'));
+    const tbl = document.getElementById(id);
+    if(!tbl) return rs;
+    tbl.querySelectorAll('tr').forEach(tr => {
+      let r = []; 
+      tr.querySelectorAll('th, td').forEach(td => {
+        let txt = td.innerText.replace(/,/g,"").replace(/¥/g,"").replace(/人/g,"").replace(/個/g,"");
+        r.push('"' + txt + '"');
+      });
       rs.push(r.join(","));
     });
     return rs;
   };
-  let csv = ["--- SUMMARY ---"].concat(getD(yTable)).concat(["", "--- DETAILS ---"]).concat(getD(mTable)).join("\r\n");
-  const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv' });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+
+  // 全要素の結合
+  let csv = settingsRows.join("\r\n") + "\r\n\r\n" +
+            aiRows.join("\r\n") + "\r\n\r\n" +
+            ["--- 年次収益サマリー ---"].concat(getD(yTable)).join("\r\n") + "\r\n\r\n" +
+            ["--- 詳細推移データ ---"].concat(getD(mTable)).join("\r\n");
+
+  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+  const blob = new Blob([bom, csv], { type: 'text/csv' });
+  const a = document.createElement("a"); 
+  a.href = URL.createObjectURL(blob); 
+  a.download = filename; 
+  a.click();
 }
 
 window.onload = () => {
