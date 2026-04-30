@@ -3,24 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>D2C Strategy Dashboard - Pro V5</title>
+  <title>D2C Strategy Dashboard - Portfolio</title>
   <style>
     :root {
       --primary: #2c3e50; --accent: #3498db; --success: #27ae60;
       --warning: #f39c12; --danger: #e74c3c; --bg: #f4f7f9; --card-bg: #ffffff;
+      --tab-bg: #e2e8f0; --tab-active: #ffffff;
     }
     body { font-family: "Helvetica Neue", Arial, sans-serif; background-color: var(--bg); color: var(--primary); margin: 0; padding: 15px; font-size: 14px; }
     
-    header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+    /* ヘッダー・タブ */
+    header { margin-bottom: 20px; }
+    .header-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #ddd; padding-bottom: 10px; flex-wrap: wrap; gap: 10px; margin-bottom: 15px;}
     h1 { margin: 0; font-size: 20px; }
     
-    .container { max-width: 1300px; margin: 0 auto; display: flex; align-items: flex-start; gap: 20px; }
+    .tabs { display: flex; gap: 10px; border-bottom: 3px solid var(--primary); padding-bottom: 0; }
+    .tab-btn { background: var(--tab-bg); border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 8px 8px 0 0; color: #555; transition: 0.2s; }
+    .tab-btn.active { background: var(--primary); color: #fff; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* レイアウト */
+    .container { max-width: 1300px; margin: 0 auto; display: flex; align-items: flex-start; gap: 20px; padding-top: 15px; }
     .main-content { flex: 1; min-width: 0; }
     .sidebar { flex: 0 0 340px; position: sticky; top: 20px; z-index: 100;}
     
+    /* カード・UIパーツ */
     .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 4px solid var(--accent); }
     .card h3 { margin-top: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; }
-    
     .section-title { font-size: 12px; color: #7f8c8d; font-weight: bold; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
     
     .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
@@ -34,6 +44,7 @@
     .stat-card { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #eee; text-align: center; }
     .stat-card.main { background: var(--primary); color: #fff; border: none; }
     .stat-card.peak { border-left: 5px solid var(--warning); background: #fffcf0; }
+    .stat-card.integrate { border-left: 5px solid #9b59b6; background: #faf5ff; }
     .stat-label { font-size: 12px; opacity: 0.9; }
     .stat-val { font-size: 22px; font-weight: bold; display: block; margin-top: 5px; }
     
@@ -43,6 +54,7 @@
     .btn-csv { background: #e0e6ed; color: #333; }
     button:hover { opacity: 0.9; transform: translateY(-1px); }
 
+    /* テーブル */
     .table-wrapper { overflow-x: auto; background: #fff; border-radius: 8px; margin-top: 10px; }
     table { width: 100%; border-collapse: collapse; font-size: 11px; min-width: 600px; white-space: nowrap; }
     th, td { border: 1px solid #eee; padding: 10px 8px; text-align: right; }
@@ -52,6 +64,7 @@
     .neg { color: var(--danger); font-weight: bold; }
     .peak-row { background-color: #fff9e6 !important; }
 
+    /* 入力マス */
     .month-inputs { display: grid; grid-template-columns: repeat(auto-fill, minmax(65px, 1fr)); gap: 6px; }
     .m-box { background: #f9f9f9; padding: 6px; border-radius: 4px; border: 1px solid #ddd; text-align: center; }
     .m-box input { width: 100%; border: none; background: transparent; text-align: center; font-weight: bold; font-size: 16px; padding: 0; }
@@ -60,7 +73,8 @@
     details { background: #fff; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ccc; }
     summary { padding: 15px; font-weight: bold; cursor: pointer; color: var(--accent); }
 
-    #ai_eval { background: #f0edff; border: 1px solid #dcd6ff; border-radius: 8px; padding: 15px; margin-top: 20px; display: none; font-size: 13px; line-height: 1.6; }
+    /* AI評価エリア */
+    .ai-eval { background: #f0edff; border: 1px solid #dcd6ff; border-radius: 8px; padding: 15px; margin-top: 20px; display: none; font-size: 13px; line-height: 1.6; }
     .ai-score-board { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; border-bottom: 1px solid #dcd6ff; padding-bottom: 10px; }
     .ai-score { font-size: 32px; font-weight: bold; color: #6c5ce7; }
     .ai-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 15px; }
@@ -68,203 +82,207 @@
     .ai-metric-label { font-weight: bold; color: #555; }
     .ai-comment { font-size: 14px; color: #333; padding: 10px; background: #fff; border-left: 4px solid #6c5ce7; border-radius: 4px; }
 
-    /* Model Setup Box */
-    .model-setup { grid-column: 1 / -1; background: #fdfdfd; padding: 12px; border-radius: 8px; border: 1px dashed #b2bec3; margin-bottom: 10px; }
+    /* 統合分析専用スタイル */
+    .integration-checkboxes { display: flex; gap: 15px; flex-wrap: wrap; background: #fdfdfd; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 20px; }
+    .integration-checkboxes label { font-size: 15px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+    .integration-checkboxes input[type="checkbox"] { transform: scale(1.3); }
 
     @media (max-width: 900px) {
       .container { flex-direction: column-reverse; }
       .sidebar { position: static; width: 100%; }
       .sidebar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-      .sidebar-grid .stat-card.main { grid-column: 1 / -1; }
+      .sidebar-grid .stat-card.main, .sidebar-grid .stat-card.integrate, .sidebar-grid button { grid-column: 1 / -1; }
     }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>📈 D2C Strategy Dashboard Pro</h1>
-  <div style="text-align: right; display: flex; align-items: center; gap: 5px;">
-    <select id="plan_select" style="padding: 8px; border-radius: 5px; font-size: 13px; border: 1px solid #ccc;" onchange="loadSnapshot()">
-      <option value="current">現在の設定</option>
-      <option value="plan_a">プラン A (保存枠)</option>
-      <option value="plan_b">プラン B (保存枠)</option>
-      <option value="plan_c">プラン C (保存枠)</option>
-    </select>
-    <button onclick="saveSnapshot()" style="width: auto; padding: 8px 12px; font-size: 13px; background: var(--accent); color: white;">この枠に保存</button>
+  <div class="header-top">
+    <h1>📈 D2C Strategy Dashboard</h1>
+    <div style="display: flex; align-items: center; gap: 5px;">
+      <select id="plan_select" style="padding: 8px; border-radius: 5px; font-size: 13px; border: 1px solid #ccc;" onchange="loadSnapshot()">
+        <option value="current">現在の設定</option>
+        <option value="plan_a">プラン A (保存枠)</option>
+        <option value="plan_b">プラン B (保存枠)</option>
+        <option value="plan_c">プラン C (保存枠)</option>
+      </select>
+      <button onclick="saveSnapshot()" style="width: auto; padding: 8px 12px; font-size: 13px; background: var(--accent); color: white;">この枠に保存</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('edit')">📝 単一プラン編集</button>
+    <button class="tab-btn" onclick="switchTab('integrate'); runIntegration();">📊 統合分析 (ポートフォリオ)</button>
   </div>
 </header>
 
-<div class="container">
-  <div class="main-content">
-    
-    <div class="section-title">おすすめ項目 (基本)</div>
-    <div class="card">
-      <h3>🛒 販売・単価・CPA</h3>
-      <div class="form-grid">
-        
-        <div class="model-setup">
-          <label style="color: var(--primary); font-weight:bold; font-size:12px; display:block; margin-bottom:8px;">🛠 F2転換率算出モデル設定</label>
-          <div style="display:flex; flex-wrap:wrap; gap:15px; font-size:13px; margin-bottom: 10px;">
-            <label><input type="radio" name="category" id="cat_hair" value="0.65" checked onchange="updateAutoF2UI(); calculate();"> ヘアケア (感度0.65)</label>
-            <label><input type="radio" name="category" id="cat_skin" value="0.7" onchange="updateAutoF2UI(); calculate();"> スキンケア (感度0.70)</label>
-            <label><input type="radio" name="category" id="cat_other" value="0.5" onchange="updateAutoF2UI(); calculate();"> その他 (感度0.50)</label>
-          </div>
-          <label class="checkbox-label" style="font-weight:bold; color:var(--primary);">
-            <input type="checkbox" id="brand_power" onchange="updateAutoF2UI(); calculate();" style="transform: scale(1.2); margin-right:5px;"> 注力中既存ブランドでスタート (ベース値一律55%)
-          </label>
-          <div style="font-size:10px; color:#7f8c8d; margin-left:24px; margin-top:4px;">※未チェック時はブランド成長を考慮し、1年目45%、2〜3年目52%、4年目以降55%で自動補正されます。</div>
-        </div>
-
-        <div class="form-group">
-          <label>初回販売価格(円)</label>
-          <input type="text" inputmode="numeric" class="num-input" id="f_price" value="1,980">
-          <label class="checkbox-label"><input type="checkbox" id="sync_price">定期も同一</label>
-        </div>
-        <div class="form-group">
-          <label>定期販売価格(円)</label>
-          <input type="text" inputmode="numeric" class="num-input" id="r_price" value="4,950">
-        </div>
-        <div class="form-group">
-          <label>初回変動費(円/個)</label>
-          <input type="text" inputmode="numeric" class="num-input" id="f_cost" value="1,600">
-          <label class="checkbox-label"><input type="checkbox" id="sync_cost" checked>定期も同一</label>
-        </div>
-        <div class="form-group">
-          <label>新規獲得CPA(円)</label>
-          <input type="text" inputmode="numeric" class="num-input" id="cpa" value="5,000">
-        </div>
-        
-        <div class="form-group">
-          <label>2回目継続率(%) <span id="f2_status" style="font-weight:normal; font-size:10px; color:var(--success); margin-left:5px;">[自動算出]</span></label>
-          <input type="number" id="ret_2" value="82.0" step="0.1" oninput="setAutoF2(false)">
-        </div>
-      </div>
-    </div>
-
-    <details>
-      <summary>⚙️ 詳細設定（固定費・CF設定・出荷数量）</summary>
-      <div style="padding: 0 15px 15px;">
-        <div class="section-title">ロジック詳細</div>
+<div id="tab_edit" class="tab-content active">
+  <div class="container">
+    <div class="main-content">
+      
+      <div class="card">
+        <h3>🛒 販売・単価・CPA</h3>
         <div class="form-grid">
-          <div class="form-group">
-            <label>月次固定費合計(円)</label>
-            <input type="text" inputmode="numeric" class="num-input" id="fixed_cost" value="0">
-          </div>
-          <div class="form-group"><label>CRM費(売上の%)</label><input type="number" id="crm_rate" value="5"></div>
-          <div class="form-group"><label>3回目継続率(%)</label><input type="number" id="ret_3" value="81.0" step="0.1"></div>
-          <div class="form-group"><label>4回目継続率(%)</label><input type="number" id="ret_4" value="75.0" step="0.1"></div>
           
-          <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; margin-top: -5px; margin-bottom: 5px;">
-            <button onclick="resetRetention()" style="background:transparent; border:1px solid #ccc; color:#7f8c8d; width:auto; font-size:11px; padding:4px 12px; border-radius:4px;">↺ 価格倍率からF2自動算出に戻す (3・4回目も初期値へ)</button>
-          </div>
-
-          <div class="form-group">
-            <label>定期変動費(円/個)</label>
-            <input type="text" inputmode="numeric" class="num-input" id="r_cost" value="1,600" disabled>
-          </div>
-          <div class="form-group">
-            <label>初回個数/定期個数</label>
-            <div style="display:flex;gap:5px;">
-              <input type="number" id="f_qty" value="1" style="width:50px;">
-              <input type="number" id="r_qty" value="1" style="width:50px;">
+          <div style="grid-column: 1 / -1; background: #fdfdfd; padding: 12px; border-radius: 8px; border: 1px dashed #b2bec3; margin-bottom: 10px;">
+            <label style="color: var(--primary); font-weight:bold; font-size:12px; display:block; margin-bottom:8px;">🛠 F2転換率算出モデル設定</label>
+            <div style="display:flex; flex-wrap:wrap; gap:15px; font-size:13px; margin-bottom: 10px;">
+              <label><input type="radio" name="category" id="cat_hair" value="0.65" checked onchange="updateAutoF2UI(); calculate();"> ヘアケア (感度0.65)</label>
+              <label><input type="radio" name="category" id="cat_skin" value="0.7" onchange="updateAutoF2UI(); calculate();"> スキンケア (感度0.70)</label>
+              <label><input type="radio" name="category" id="cat_other" value="0.5" onchange="updateAutoF2UI(); calculate();"> その他 (感度0.50)</label>
             </div>
+            <label class="checkbox-label" style="font-weight:bold; color:var(--primary);">
+              <input type="checkbox" id="brand_power" onchange="updateAutoF2UI(); calculate();" style="transform: scale(1.2); margin-right:5px;"> 注力中既存ブランドでスタート (ベース値一律55%)
+            </label>
+          </div>
+
+          <div class="form-group"><label>初回販売価格(円)</label><input type="text" inputmode="numeric" class="num-input" id="f_price" value="1,980"><label class="checkbox-label"><input type="checkbox" id="sync_price">定期も同一</label></div>
+          <div class="form-group"><label>定期販売価格(円)</label><input type="text" inputmode="numeric" class="num-input" id="r_price" value="4,950"></div>
+          <div class="form-group"><label>初回変動費(円/個)</label><input type="text" inputmode="numeric" class="num-input" id="f_cost" value="1,600"><label class="checkbox-label"><input type="checkbox" id="sync_cost" checked>定期も同一</label></div>
+          <div class="form-group"><label>新規獲得CPA(円)</label><input type="text" inputmode="numeric" class="num-input" id="cpa" value="5,000"></div>
+          <div class="form-group"><label>2回目継続率(%) <span id="f2_status" style="font-weight:normal; font-size:10px; color:var(--success);">[自動算出]</span></label><input type="number" id="ret_2" value="82.0" step="0.1" oninput="setAutoF2(false)"></div>
+        </div>
+      </div>
+
+      <details>
+        <summary>⚙️ 詳細設定（固定費・CF設定・出荷数量）</summary>
+        <div style="padding: 0 15px 15px;">
+          <div class="section-title">ロジック詳細</div>
+          <div class="form-grid">
+            <div class="form-group"><label>月次固定費(円)</label><input type="text" inputmode="numeric" class="num-input" id="fixed_cost" value="0"></div>
+            <div class="form-group"><label>CRM費(売上%)</label><input type="number" id="crm_rate" value="5"></div>
+            <div class="form-group"><label>3回目継続率(%)</label><input type="number" id="ret_3" value="81.0" step="0.1"></div>
+            <div class="form-group"><label>4回目継続率(%)</label><input type="number" id="ret_4" value="75.0" step="0.1"></div>
+            <div style="grid-column: 1 / -1; text-align: right;"><button onclick="resetRetention()" style="background:transparent; border:1px solid #ccc; color:#7f8c8d; width:auto; font-size:11px; padding:4px 12px; border-radius:4px;">↺ F2自動算出に戻す (3・4回目も初期値へ)</button></div>
+            <div class="form-group"><label>定期変動費(円/個)</label><input type="text" inputmode="numeric" class="num-input" id="r_cost" value="1,600" disabled></div>
+            <div class="form-group"><label>初回/定期個数</label><div style="display:flex;gap:5px;"><input type="number" id="f_qty" value="1" style="width:50px;"><input type="number" id="r_qty" value="1" style="width:50px;"></div></div>
+          </div>
+          <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+          <div class="section-title">キャッシュフロー(CF)設定</div>
+          <div style="margin-bottom:10px;"><input type="radio" name="cf_mode" id="cf_std" checked onchange="toggleCFInput()"><label for="cf_std">標準</label> <input type="radio" name="cf_mode" id="cf_custom" onchange="toggleCFInput()" style="margin-left:15px;"><label for="cf_custom">カスタム</label></div>
+          <div class="form-grid" id="cf_custom_fields" style="opacity: 0.5; pointer-events: none;">
+            <div class="form-group"><label>入金(日後)</label><input type="number" id="cf_in" value="15"></div>
+            <div class="form-group"><label>広告支払(日後)</label><input type="number" id="cf_ad" value="30"></div>
+            <div class="form-group"><label>変動費支払(日後)</label><input type="number" id="cf_cost" value="30"></div>
           </div>
         </div>
-        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
-        <div class="section-title">キャッシュフロー(CF)設定</div>
-        <div style="margin-bottom:10px;">
-          <input type="radio" name="cf_mode" id="cf_std" checked onchange="toggleCFInput()"><label for="cf_std">標準 (入金15日/支払30日)</label>
-          <input type="radio" name="cf_mode" id="cf_custom" onchange="toggleCFInput()" style="margin-left:15px;"><label for="cf_custom">カスタム</label>
-        </div>
-        <div class="form-grid" id="cf_custom_fields" style="opacity: 0.5; pointer-events: none;">
-          <div class="form-group"><label>入金サイクル(日後)</label><input type="number" id="cf_in" value="15"></div>
-          <div class="form-group"><label>広告支払(日後)</label><input type="number" id="cf_ad" value="30"></div>
-          <div class="form-group"><label>変動費支払(日後)</label><input type="number" id="cf_cost" value="30"></div>
-        </div>
-      </div>
-    </details>
+      </details>
 
-    <div class="card" style="border-top-color: var(--success);">
-      <h3>📣 新規獲得人数 (1-24ヶ月)</h3>
-      
-      <div style="background:#f0f4f8; padding:12px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-        <div style="display:flex; align-items:center; gap:5px;">
-          <span style="font-size:12px; font-weight:bold; color:#555;">◆ 全月一括 (ベース/リセット用):</span>
-          <input type="text" inputmode="numeric" class="num-input" id="base_users" value="100" style="width:70px; padding:6px; font-size:14px; border:1px solid #ccc; border-radius:4px; text-align:right;"> 
-          <button onclick="applySameUsers()" style="width:auto; padding:6px 12px; font-size:12px; background:#bdc3c7; color:#333; border:none; border-radius:4px;">適用</button>
+      <div class="card" style="border-top-color: var(--success);">
+        <h3>📣 新規獲得人数 (1-24ヶ月)</h3>
+        <div style="background:#f0f4f8; padding:12px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; align-items:center; gap:5px;"><span style="font-size:12px; font-weight:bold; color:#555;">◆ 全月一括:</span><input type="text" inputmode="numeric" class="num-input" id="base_users" value="100" style="width:70px; padding:6px; font-size:14px; border:1px solid #ccc; border-radius:4px; text-align:right;"> <button onclick="applySameUsers()" style="width:auto; padding:6px 12px; font-size:12px; background:#bdc3c7; color:#333; border:none; border-radius:4px;">適用</button></div>
+          <label style="cursor:pointer; font-weight:bold; color:var(--accent); display:flex; align-items:center; gap:5px;"><input type="checkbox" id="auto_decay" checked style="transform: scale(1.2);"> 25ヶ月以降(減衰モデル)</label>
         </div>
-        <label style="cursor:pointer; font-weight:bold; color:var(--accent); display:flex; align-items:center; gap:5px; font-size:12px;">
-          <input type="checkbox" id="auto_decay" checked style="transform: scale(1.2);"> 25ヶ月以降(減衰モデル)
-        </label>
+        <div style="background:#f0f4f8; padding:12px; border-radius:8px; margin-bottom:15px;">
+          <div style="font-weight:bold; margin-bottom:8px; font-size:12px; color:#555;">◆ 四半期(Q)ごとの一括設定</div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+            <div><span style="font-size:10px;color:#777;">Q1</span><input type="text" id="q1" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
+            <div><span style="font-size:10px;color:#777;">Q2</span><input type="text" id="q2" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
+            <div><span style="font-size:10px;color:#777;">Q3</span><input type="text" id="q3" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
+            <div><span style="font-size:10px;color:#777;">Q4</span><input type="text" id="q4" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
+            <div><span style="font-size:10px;color:#777;">Q5</span><input type="text" id="q5" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
+            <div><span style="font-size:10px;color:#777;">Q6</span><input type="text" id="q6" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
+            <div><span style="font-size:10px;color:#777;">Q7</span><input type="text" id="q7" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
+            <div><span style="font-size:10px;color:#777;">Q8</span><input type="text" id="q8" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
+            <button onclick="applyQuarters()" style="width:auto; padding:6px 15px; font-size:12px; background:#bdc3c7; color:#333; margin-left:5px; border:none; border-radius:4px;">反映</button>
+          </div>
+        </div>
+        <div class="month-inputs" id="months_container"></div>
       </div>
 
-      <div style="background:#f0f4f8; padding:12px; border-radius:8px; margin-bottom:15px;">
-        <div style="font-weight:bold; margin-bottom:8px; font-size:12px; color:#555;">◆ 四半期(Q)ごとの一括設定</div>
-        <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
-          <div><span style="font-size:10px;color:#777;">Q1</span><input type="text" id="q1" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
-          <div><span style="font-size:10px;color:#777;">Q2</span><input type="text" id="q2" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
-          <div><span style="font-size:10px;color:#777;">Q3</span><input type="text" id="q3" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
-          <div><span style="font-size:10px;color:#777;">Q4</span><input type="text" id="q4" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
-          <div><span style="font-size:10px;color:#777;">Q5</span><input type="text" id="q5" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
-          <div><span style="font-size:10px;color:#777;">Q6</span><input type="text" id="q6" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
-          <div><span style="font-size:10px;color:#777;">Q7</span><input type="text" id="q7" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
-          <div><span style="font-size:10px;color:#777;">Q8</span><input type="text" id="q8" class="num-input" style="width:45px; padding:6px; border:1px solid #ccc; border-radius:4px; text-align:center;"></div>
-          <button onclick="applyQuarters()" style="width:auto; padding:6px 15px; font-size:12px; background:#bdc3c7; color:#333; margin-left:5px; border:none; border-radius:4px;">反映</button>
-        </div>
+      <div id="ai_eval" class="ai-eval"></div>
+
+      <div class="card">
+        <h3>📊 年次収益サマリー</h3>
+        <div class="table-wrapper"><table id="yearly_table"><thead><tr><th class="row-header">項目</th><th>1年目</th><th>2年目</th><th>3年目</th><th>4年目</th><th>5年目</th></tr></thead><tbody id="yearly_body"></tbody></table></div>
       </div>
 
-      <div style="font-size:11px; color:#7f8c8d; margin-bottom:10px;">※下の24マスは個別に手修正可能です。</div>
-      <div class="month-inputs" id="months_container"></div>
+      <details>
+        <summary>🔍 詳細推移データ (月次・キャッシュフロー詳細)</summary>
+        <div class="table-wrapper"><table id="monthly_table"><thead><tr id="m_header"><th class="row-header">項目</th></tr></thead><tbody id="m_body"></tbody></table></div>
+      </details>
     </div>
 
-    <div id="ai_eval"></div>
-
-    <div class="card">
-      <h3>📊 年次収益サマリー</h3>
-      <div class="table-wrapper">
-        <table id="yearly_table">
-          <thead><tr><th class="row-header">項目</th><th>1年目</th><th>2年目</th><th>3年目</th><th>4年目</th><th>5年目</th></tr></thead>
-          <tbody id="yearly_body"></tbody>
-        </table>
+    <div class="sidebar">
+      <div class="sidebar-grid">
+        <div class="stat-card main"><span class="stat-label">5年後 累計営業利益</span><span class="stat-val" id="res_y5">¥0</span></div>
+        <div class="stat-card peak"><span class="stat-label">最大必要資金 (ピーク)</span><span class="stat-val" id="res_peak" style="color:var(--warning);">¥0</span></div>
+        <div class="stat-card"><span class="stat-label">投資回収 (損益BEP)</span><span class="stat-val" id="res_bep" style="color:var(--accent);">- ヶ月</span></div>
+        <button class="btn-calc" onclick="calculate()">シミュレーション実行</button>
+        <button class="btn-ai" onclick="runAIEvaluation('single')">✨ AIプラン評価</button>
+        <button class="btn-csv" onclick="downloadCSV('yearly_table', 'monthly_table', 'd2c_plan.csv')">CSVで保存</button>
       </div>
     </div>
-
-    <details>
-      <summary>🔍 詳細推移データ (月次・キャッシュフロー詳細)</summary>
-      <div class="table-wrapper">
-        <table id="monthly_table">
-          <thead><tr id="m_header"><th class="row-header">項目</th></tr></thead>
-          <tbody id="m_body"></tbody>
-        </table>
-      </div>
-    </details>
-
   </div>
+</div>
 
-  <div class="sidebar">
-    <div class="sidebar-grid">
-      <div class="stat-card main">
-        <span class="stat-label">5年後 累計営業利益</span>
-        <span class="stat-val" id="res_y5">¥0</span>
-      </div>
-      <div class="stat-card peak">
-        <span class="stat-label">最大必要資金 (ピーク)</span>
-        <span class="stat-val" id="res_peak" style="color:var(--warning);">¥0</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">投資回収 (損益BEP)</span>
-        <span class="stat-val" id="res_bep" style="color:var(--accent);">- ヶ月</span>
-      </div>
+<div id="tab_integrate" class="tab-content">
+  <div class="container">
+    <div class="main-content">
       
-      <button class="btn-calc" onclick="calculate()">シミュレーション実行</button>
-      <button class="btn-ai" onclick="runAIEvaluation()">✨ AIプラン評価</button>
-      <button class="btn-csv" onclick="downloadCSV()">CSVで保存</button>
+      <div class="card" style="border-top-color: #9b59b6;">
+        <h3>🔗 統合するプランを選択</h3>
+        <p style="font-size: 12px; color: #7f8c8d;">保存済みのプランを複数選択し、ブランド全体の合算データ（ポートフォリオ）を分析します。</p>
+        <div class="integration-checkboxes">
+          <label><input type="checkbox" id="chk_current" checked> 現在の設定</label>
+          <label><input type="checkbox" id="chk_plan_a"> プラン A</label>
+          <label><input type="checkbox" id="chk_plan_b"> プラン B</label>
+          <label><input type="checkbox" id="chk_plan_c"> プラン C</label>
+          <button onclick="runIntegration()" style="width: auto; padding: 8px 20px; font-size: 14px; background: #9b59b6; color: white; margin-left: auto;">統合計算を実行</button>
+        </div>
+      </div>
+
+      <div id="ai_eval_int" class="ai-eval"></div>
+
+      <div class="card">
+        <h3>📊 連結 年次収益サマリー</h3>
+        <div class="table-wrapper"><table id="int_yearly_table"><thead><tr><th class="row-header">項目</th><th>1年目</th><th>2年目</th><th>3年目</th><th>4年目</th><th>5年目</th></tr></thead><tbody id="int_yearly_body"></tbody></table></div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3>💾 統合結果を新しいプランとして保存</h3>
+        </div>
+        <p style="font-size: 12px; color: #7f8c8d;">統合されたデータを加重平均で再計算し、1つの事業計画として上書き保存します。</p>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <select id="int_save_target" style="padding: 8px; border-radius: 5px; border: 1px solid #ccc;">
+            <option value="plan_a">プラン A に上書き</option>
+            <option value="plan_b">プラン B に上書き</option>
+            <option value="plan_c">プラン C に上書き</option>
+          </select>
+          <button onclick="saveIntegrationAsPlan()" style="width: auto; background: var(--primary); padding: 8px 20px; font-size: 13px;">保存する</button>
+        </div>
+      </div>
+
+      <details>
+        <summary>🔍 連結 詳細推移データ</summary>
+        <div class="table-wrapper"><table id="int_monthly_table"><thead><tr id="int_m_header"><th class="row-header">項目</th></tr></thead><tbody id="int_m_body"></tbody></table></div>
+      </details>
+
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-grid">
+        <div class="stat-card integrate"><span class="stat-label">連結 5年後営業利益</span><span class="stat-val" id="int_res_y5">¥0</span></div>
+        <div class="stat-card peak"><span class="stat-label">連結 最大必要資金 (ピーク)</span><span class="stat-val" id="int_res_peak" style="color:var(--warning);">¥0</span></div>
+        <div class="stat-card"><span class="stat-label">連結 投資回収 (BEP)</span><span class="stat-val" id="int_res_bep" style="color:var(--accent);">- ヶ月</span></div>
+        <button class="btn-ai" onclick="runIntegrationAI()">✨ 連結ポートフォリオ評価</button>
+        <button class="btn-csv" onclick="downloadCSV('int_yearly_table', 'int_monthly_table', 'd2c_integrated.csv')">連結CSV出力</button>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-// カンマ制御ロジック
+// --- 基本UI処理 ---
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab_' + tabId).classList.add('active');
+  event.target.classList.add('active');
+}
+
 document.addEventListener('focusout', function(e) {
   if(e.target.classList.contains('num-input')) {
     let val = e.target.value.replace(/,/g, '');
@@ -272,56 +290,39 @@ document.addEventListener('focusout', function(e) {
   }
 });
 document.addEventListener('focusin', function(e) {
-  if(e.target.classList.contains('num-input')) {
-    e.target.value = e.target.value.replace(/,/g, '');
-  }
+  if(e.target.classList.contains('num-input')) e.target.value = e.target.value.replace(/,/g, '');
 });
-
-function getVal(id) {
-  const el = document.getElementById(id);
-  if(!el) return 0;
-  return Number(el.value.replace(/,/g, '')) || 0;
-}
+function getVal(id) { const el = document.getElementById(id); return el ? (Number(el.value.replace(/,/g, '')) || 0) : 0; }
 
 const masterRet = [100, 82, 81, 75, 85, 95, 95.25, 95.5, 95.75, 96, 96.25, 96.5, 95.76, 95.02, 94.28, 93.54, 92.8, 92.06, 91.41, 90.75, 90.1, 89.44, 88.79, 88.13, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.57, 91.57, 91.57, 91.58, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5];
 
-// === F2自動算出モデル関連のステート ===
-let autoF2Mode = true;
-
-function setAutoF2(isAuto) {
-  autoF2Mode = isAuto;
-  const statusEl = document.getElementById('f2_status');
-  if(isAuto) {
-    statusEl.innerText = "[自動算出]";
-    statusEl.style.color = "var(--success)";
-    updateAutoF2UI();
-  } else {
-    statusEl.innerText = "[手動設定]";
-    statusEl.style.color = "var(--warning)";
-  }
-}
-
-function updateAutoF2UI() {
-  if(!autoF2Mode) return;
-  const p1 = Math.max(1, getVal('f_price'));
-  const p2 = Math.max(1, getVal('r_price'));
-  const alpha = Number(document.querySelector('input[name="category"]:checked').value);
-  const isExisting = document.getElementById('brand_power').checked;
-  
-  // UI上には1年目のベース(45)か、チェックありのベース(55)を表示
-  const c_base = isExisting ? 55 : 45; 
-  let f2 = c_base * Math.pow(p2 / p1, -alpha);
-  f2 = Math.max(f2, 10.0);
-  
-  document.getElementById('ret_2').value = f2.toFixed(1);
-}
-
-// 月次枠生成
+// --- 初期描画 ---
 const container = document.getElementById('months_container');
 const m_header = document.getElementById('m_header');
+const int_m_header = document.getElementById('int_m_header');
 for(let i=1; i<=24; i++){
   container.innerHTML += `<div class="m-box"><span>${i}月</span><input type="text" inputmode="numeric" class="m-val num-input" id="m${i}" value="100"></div>`;
   m_header.innerHTML += `<th>${i}月</th>`;
+  int_m_header.innerHTML += `<th>${i}月</th>`;
+}
+
+// --- F2自動算出モデル ---
+let autoF2Mode = true;
+function setAutoF2(isAuto) {
+  autoF2Mode = isAuto;
+  const statusEl = document.getElementById('f2_status');
+  statusEl.innerText = isAuto ? "[自動算出]" : "[手動設定]";
+  statusEl.style.color = isAuto ? "var(--success)" : "var(--warning)";
+  updateAutoF2UI();
+}
+function updateAutoF2UI() {
+  if(!autoF2Mode) return;
+  const p1 = Math.max(1, getVal('f_price')), p2 = Math.max(1, getVal('r_price'));
+  const alpha = Number(document.querySelector('input[name="category"]:checked').value);
+  const isEx = document.getElementById('brand_power').checked;
+  const c_base = isEx ? 55 : 45; 
+  let f2 = Math.max(c_base * Math.pow(p2 / p1, -alpha), 10.0);
+  document.getElementById('ret_2').value = f2.toFixed(1);
 }
 
 function setupSync() {
@@ -329,175 +330,123 @@ function setupSync() {
   ids.forEach(([f, r, s]) => {
     const elF = document.getElementById(f), elR = document.getElementById(r), elS = document.getElementById(s);
     const sync = () => { 
-      if(elS.checked){ 
-        let v = elF.value.replace(/,/g, '');
-        elR.value = v === '' ? '' : Number(v).toLocaleString(); 
-        elR.disabled = true; 
-      } else { 
-        elR.disabled = false; 
-      }
+      if(elS.checked){ elR.value = elF.value.replace(/,/g, '')===''?'':Number(elF.value.replace(/,/g,'')).toLocaleString(); elR.disabled = true; } 
+      else { elR.disabled = false; }
       if(f === 'f_price' || r === 'r_price') updateAutoF2UI();
     };
-    elF.addEventListener('input', sync); 
-    elF.addEventListener('focusout', sync); 
-    elR.addEventListener('input', () => { updateAutoF2UI(); });
-    elR.addEventListener('focusout', () => { updateAutoF2UI(); });
-    elS.addEventListener('change', sync); 
-    sync();
+    elF.addEventListener('input', sync); elF.addEventListener('focusout', sync); 
+    elR.addEventListener('input', updateAutoF2UI); elR.addEventListener('focusout', updateAutoF2UI);
+    elS.addEventListener('change', sync); sync();
   });
 }
 
 function toggleCFInput() {
   const custom = document.getElementById('cf_custom').checked;
   const fields = document.getElementById('cf_custom_fields');
-  fields.style.opacity = custom ? "1" : "0.5";
-  fields.style.pointerEvents = custom ? "auto" : "none";
+  fields.style.opacity = custom ? "1" : "0.5"; fields.style.pointerEvents = custom ? "auto" : "none";
 }
 
-// 継続率リセット（オートモード復活）
-function resetRetention() {
-  document.getElementById('ret_3').value = 81.0;
-  document.getElementById('ret_4').value = 75.0;
-  setAutoF2(true);
-  calculate();
-}
-
-// 全月一括反映
-function applySameUsers(){
-  const v = document.getElementById('base_users').value.replace(/,/g, '');
-  if (v !== '') {
-    let numVal = Number(v).toLocaleString();
-    document.querySelectorAll('.m-val').forEach(el => el.value = numVal);
-  }
-}
-
-// 四半期入力の反映
+function resetRetention() { document.getElementById('ret_3').value = 81.0; document.getElementById('ret_4').value = 75.0; setAutoF2(true); calculate(); }
+function applySameUsers(){ const v = document.getElementById('base_users').value.replace(/,/g, ''); if (v !== '') { document.querySelectorAll('.m-val').forEach(el => el.value = Number(v).toLocaleString()); } }
 function applyQuarters() {
   for(let q=1; q<=8; q++) {
     let val = document.getElementById('q'+q).value.replace(/,/g, '');
     if (val !== '') {
       let numVal = Number(val).toLocaleString();
-      document.getElementById('m'+((q-1)*3 + 1)).value = numVal;
-      document.getElementById('m'+((q-1)*3 + 2)).value = numVal;
-      document.getElementById('m'+((q-1)*3 + 3)).value = numVal;
+      document.getElementById('m'+((q-1)*3+1)).value = numVal; document.getElementById('m'+((q-1)*3+2)).value = numVal; document.getElementById('m'+((q-1)*3+3)).value = numVal;
     }
   }
 }
 
+// --- 計算コアエンジン ---
 function distribute(amount, delayDays, targetArray, startMonth) {
-  const monthsDelay = Math.floor(delayDays / 30);
-  const remainder = (delayDays % 30) / 30;
-  const m1 = startMonth + monthsDelay;
-  const m2 = m1 + 1;
-  if (m1 < 62) targetArray[m1] = (targetArray[m1] || 0) + (amount * (1 - remainder));
-  if (m2 < 62) targetArray[m2] = (targetArray[m2] || 0) + (amount * remainder);
+  const md = Math.floor(delayDays / 30), r = (delayDays % 30) / 30;
+  const m1 = startMonth + md, m2 = m1 + 1;
+  if (m1 < 62) targetArray[m1] = (targetArray[m1] || 0) + (amount * (1 - r));
+  if (m2 < 62) targetArray[m2] = (targetArray[m2] || 0) + (amount * r);
 }
 
-// グローバルスコープでAI用変数を保持
-window.simStats = {};
+// パース関数：保存データ(dict)から数値を安全に取り出す
+function getNumFromData(data, key, def) { return data && data[key] !== undefined ? Number(String(data[key]).replace(/,/g, '')) || 0 : def; }
 
-function calculate() {
-  const p1 = Math.max(1, getVal('f_price'));
-  const p2 = Math.max(1, getVal('r_price'));
-  const f_q = getVal('f_qty'), r_q = getVal('r_qty');
-  const cpa = getVal('cpa'), f_c = getVal('f_cost'), r_c = getVal('r_cost');
-  const crm = getVal('crm_rate') / 100, fixed = getVal('fixed_cost');
-  const alpha = Number(document.querySelector('input[name="category"]:checked').value);
-  const isExisting = document.getElementById('brand_power').checked;
+function runSimulationEngine(data) {
+  const p1 = Math.max(1, getNumFromData(data, 'f_price', 1980)), p2 = Math.max(1, getNumFromData(data, 'r_price', 4950));
+  const f_q = getNumFromData(data, 'f_qty', 1), r_q = getNumFromData(data, 'r_qty', 1);
+  const cpa = getNumFromData(data, 'cpa', 5000), f_c = getNumFromData(data, 'f_cost', 1600), r_c = getNumFromData(data, 'r_cost', 1600);
+  const crm = getNumFromData(data, 'crm_rate', 5) / 100, fixed = getNumFromData(data, 'fixed_cost', 0);
   
+  const alpha = data.category ? Number(data.category) : 0.65;
+  const isExisting = data.brand_power === true;
+  const isAuto = data.autoF2Mode !== false; // default true
+
   let curRet = [...masterRet];
-  curRet[2] = getVal('ret_3'); curRet[3] = getVal('ret_4');
+  curRet[2] = getNumFromData(data, 'ret_3', 81); curRet[3] = getNumFromData(data, 'ret_4', 75);
   
   let newUsers = []; let totalNew = 0;
-  for(let i=1; i<=24; i++){ let v = getVal(`m${i}`); newUsers.push(v); totalNew += v; }
-  const avgN = totalNew / 24, isDecay = document.getElementById('auto_decay').checked;
+  for(let i=1; i<=24; i++){ let v = getNumFromData(data, `m${i}`, 100); newUsers.push(v); totalNew += v; }
+  const avgN = totalNew / 24, isDecay = data.auto_decay !== false;
   for(let m=25; m<=60; m++) newUsers.push(isDecay ? avgN * (curRet[Math.min(m-1, 59)]/100) : 0);
 
-  let inD = 15, adD = 30, coD = 30;
-  if(document.getElementById('cf_custom').checked){
-    inD = getVal('cf_in'); adD = getVal('cf_ad'); coD = getVal('cf_cost');
-  }
+  let inD = data.cf_custom ? getNumFromData(data,'cf_in',15) : 15;
+  let adD = data.cf_custom ? getNumFromData(data,'cf_ad',30) : 30;
+  let coD = data.cf_custom ? getNumFromData(data,'cf_cost',30) : 30;
 
-  let tProf = 0, bep = 0, peakMin = 0, tRev = 0;
-  let yearly = Array.from({length: 5}, () => ({rev: 0, prof: 0}));
-  let monthlyLog = [];
-  let cfInflow = new Array(65).fill(0), cfOutflow = new Array(65).fill(0);
+  let res = { tProf:0, bep:0, peakMin:0, tRev:0, yearly:Array.from({length: 5}, () => ({rev: 0, prof: 0, new: 0})), monthlyLog:[], monthlyCF:[], cfInflow:new Array(65).fill(0), cfOutflow:new Array(65).fill(0), margin: (p1-(f_q*f_c))+((p2-(r_q*r_c))*3), params: { p1, p2, cpa, f_c, r_c, fixed } };
   let cumCF = 0;
 
   for(let m=0; m<60; m++){
     let curNew = newUsers[m], curRep = 0;
-    
     for(let p=0; p<m; p++){
-      // 動的F2計算ロジック (コホート獲得月 p に依存)
       let f2_rate;
-      if (!autoF2Mode) {
-        f2_rate = getVal('ret_2');
-      } else {
-        let c_base = 45;
-        if (isExisting) {
-          c_base = 55;
-        } else {
-          if (p >= 36) c_base = 55;
-          else if (p >= 12) c_base = 52;
-          else c_base = 45;
-        }
-        let calc_f2 = c_base * Math.pow(p2 / p1, -alpha);
-        f2_rate = Math.max(calc_f2, 10.0);
+      if (!isAuto) { f2_rate = getNumFromData(data, 'ret_2', 82); } 
+      else {
+        let c_base = isExisting ? 55 : (p >= 36 ? 55 : (p >= 12 ? 52 : 45));
+        f2_rate = Math.max(c_base * Math.pow(p2 / p1, -alpha), 10.0);
       }
-      
       let surv = newUsers[p];
-      for(let s=1; s<=(m-p); s++) {
-        let retRate = (s === 1) ? f2_rate : curRet[Math.min(s, 59)];
-        surv *= (retRate/100);
-      }
+      for(let s=1; s<=(m-p); s++) surv *= (s===1 ? f2_rate : curRet[Math.min(s, 59)])/100;
       curRep += surv;
     }
-    
-    let rev = (curNew * p1) + (curRep * p2);
-    let cost = (curNew * f_q * f_c) + (curRep * r_q * r_c);
-    let ad = curNew * cpa;
+    let rev = (curNew * p1) + (curRep * p2), cost = (curNew * f_q * f_c) + (curRep * r_q * r_c), ad = curNew * cpa;
     let prof = rev - cost - ad - (rev * crm) - fixed;
 
-    tRev += rev;
-    tProf += prof;
-    if(tProf > 0 && bep === 0) bep = m + 1;
-    yearly[Math.floor(m / 12)].rev += rev; yearly[Math.floor(m / 12)].prof += prof;
+    res.tRev += rev; res.tProf += prof;
+    if(res.tProf > 0 && res.bep === 0) res.bep = m + 1;
+    res.yearly[Math.floor(m / 12)].rev += rev; res.yearly[Math.floor(m / 12)].prof += prof; res.yearly[Math.floor(m / 12)].new += curNew;
 
-    distribute(rev, inD, cfInflow, m);
-    distribute(ad, adD, cfOutflow, m);
-    distribute(cost + (rev * crm) + fixed, coD, cfOutflow, m);
-
-    monthlyLog.push({ new: curNew, rep: curRep, rev: rev, prof: prof, cumProf: tProf });
+    distribute(rev, inD, res.cfInflow, m); distribute(ad, adD, res.cfOutflow, m); distribute(cost + (rev * crm) + fixed, coD, res.cfOutflow, m);
+    res.monthlyLog.push({ new: curNew, rep: curRep, rev: rev, prof: prof, cumProf: res.tProf });
   }
 
-  let monthlyCF = [];
   for(let m=0; m<60; m++){
-    let flow = cfInflow[m] - cfOutflow[m];
+    let flow = res.cfInflow[m] - res.cfOutflow[m];
     cumCF += flow;
-    if(cumCF < peakMin) peakMin = cumCF;
-    if(m < 24) monthlyCF.push({ flow, cumCF });
+    if(cumCF < res.peakMin) res.peakMin = cumCF;
+    if(m < 24) res.monthlyCF.push({ flow, cumCF });
   }
+  return res;
+}
 
-  window.simStats = { bep: bep, peakMin: peakMin, tProf: tProf, tRev: tRev, margin: (p1 - (f_q * f_c)) + ((p2 - (r_q * r_c)) * 3) };
-
+// UI更新処理
+function renderTables(res, prefix = "") {
   const fmt = n => Math.round(n).toLocaleString();
-  document.getElementById('res_y5').innerText = "¥" + fmt(tProf);
-  document.getElementById('res_peak').innerText = "¥" + fmt(Math.abs(peakMin));
-  document.getElementById('res_bep').innerText = bep > 0 ? bep + " ヶ月" : "未回収";
+  document.getElementById(prefix+'res_y5').innerText = "¥" + fmt(res.tProf);
+  document.getElementById(prefix+'res_peak').innerText = "¥" + fmt(Math.abs(res.peakMin));
+  document.getElementById(prefix+'res_bep').innerText = res.bep > 0 ? res.bep + " ヶ月" : "未回収";
 
   let yBody = "";
   for(let i=0; i<3; i++){
     yBody += `<tr><td class="row-header">${["累計売上","累計営業利益","利益率"][i]}</td>`;
     let cr=0, cp=0;
     for(let y=0; y<5; y++){
-      cr += yearly[y].rev; cp += yearly[y].prof;
+      cr += res.yearly[y].rev; cp += res.yearly[y].prof;
       if(i===0) yBody += `<td>¥${fmt(cr)}</td>`;
       else if(i===1) yBody += `<td class="${cp>=0?'pos':'neg'}">¥${fmt(cp)}</td>`;
       else yBody += `<td>${cr>0?(cp/cr*100).toFixed(1):0}%</td>`;
     }
     yBody += `</tr>`;
   }
-  document.getElementById('yearly_body').innerHTML = yBody;
+  document.getElementById(prefix+'yearly_body').innerHTML = yBody;
 
   let mBody = "";
   const labels = ["新規数","リピート数","単月売上","単月損益","累計損益","単月CF","累計CF"];
@@ -505,30 +454,42 @@ function calculate() {
     mBody += `<tr><td class="row-header ${idx>=5?'peak-row':''}">${label}</td>`;
     for(let m=0; m<24; m++){
       let val, cls = "";
-      if(idx===0) val = fmt(monthlyLog[m].new);
-      if(idx===1) val = fmt(monthlyLog[m].rep);
-      if(idx===2) val = "¥"+fmt(monthlyLog[m].rev);
-      if(idx===3) { val = "¥"+fmt(monthlyLog[m].prof); cls = monthlyLog[m].prof<0?'neg':'pos'; }
-      if(idx===4) { val = "¥"+fmt(monthlyLog[m].cumProf); cls = monthlyLog[m].cumProf<0?'neg':'pos'; }
-      if(idx===5) { val = "¥"+fmt(monthlyCF[m].flow); cls = monthlyCF[m].flow<0?'neg':'pos'; }
-      if(idx===6) { val = "¥"+fmt(monthlyCF[m].cumCF); cls = monthlyCF[m].cumCF<0?'neg':'pos'; }
+      if(idx===0) val = fmt(res.monthlyLog[m].new);
+      if(idx===1) val = fmt(res.monthlyLog[m].rep);
+      if(idx===2) val = "¥"+fmt(res.monthlyLog[m].rev);
+      if(idx===3) { val = "¥"+fmt(res.monthlyLog[m].prof); cls = res.monthlyLog[m].prof<0?'neg':'pos'; }
+      if(idx===4) { val = "¥"+fmt(res.monthlyLog[m].cumProf); cls = res.monthlyLog[m].cumProf<0?'neg':'pos'; }
+      if(idx===5) { val = "¥"+fmt(res.monthlyCF[m].flow); cls = res.monthlyCF[m].flow<0?'neg':'pos'; }
+      if(idx===6) { val = "¥"+fmt(res.monthlyCF[m].cumCF); cls = res.monthlyCF[m].cumCF<0?'neg':'pos'; }
       mBody += `<td class="${cls}">${val}</td>`;
     }
     mBody += `</tr>`;
   });
-  document.getElementById('m_body').innerHTML = mBody;
-
-  saveCurrent();
+  document.getElementById(prefix+'m_body').innerHTML = mBody;
 }
 
+// ------------------------------------
+// モード１：単体プラン計算
+// ------------------------------------
 function getFormData() {
-  const inputs = document.querySelectorAll('input.num-input, input[type="number"], input[type="checkbox"], input[type="radio"]:checked');
+  const inputs = document.querySelectorAll('#tab_edit input.num-input, #tab_edit input[type="number"], #tab_edit input[type="checkbox"], #tab_edit input[type="radio"]:checked');
   const data = { autoF2Mode: autoF2Mode };
   inputs.forEach(el => {
     if(el.type === 'checkbox' || el.type === 'radio') data[el.id] = el.checked;
     else data[el.id] = el.value.replace(/,/g, '');
   });
+  // ラジオボタンのvalueを取得
+  const cat = document.querySelector('input[name="category"]:checked');
+  if(cat) data.category = cat.value;
   return data;
+}
+
+function calculate() {
+  const data = getFormData();
+  const res = runSimulationEngine(data);
+  window.simStats = res; // AI用
+  renderTables(res, "");
+  saveCurrent();
 }
 
 function saveCurrent() { localStorage.setItem('d2c_current_config', JSON.stringify(getFormData())); }
@@ -537,13 +498,14 @@ function loadConfig(configStr) {
   if(!configStr) return;
   const data = JSON.parse(configStr);
   Object.keys(data).forEach(id => {
-    if(id === 'autoF2Mode') return;
+    if(id === 'autoF2Mode' || id === 'category') return;
     const el = document.getElementById(id);
     if(el) {
       if(el.type === 'checkbox' || el.type === 'radio') el.checked = data[id];
       else el.value = el.classList.contains('num-input') && data[id] !== '' ? Number(data[id]).toLocaleString() : data[id];
     }
   });
+  if(data.category) { const r = document.querySelector(`input[name="category"][value="${data.category}"]`); if(r) r.checked = true; }
   if(data.autoF2Mode !== undefined) setAutoF2(data.autoF2Mode);
   setupSync(); toggleCFInput();
 }
@@ -561,7 +523,138 @@ function loadSnapshot() {
   calculate();
 }
 
-// --- 5項目のAI評価ロジック ---
+// ------------------------------------
+// モード２：統合分析 (ポートフォリオ)
+// ------------------------------------
+let lastIntegratedData = null; // 上書き保存用
+
+function runIntegration() {
+  const keys = [
+    { id: 'chk_current', key: 'd2c_current_config' },
+    { id: 'chk_plan_a', key: 'd2c_snap_plan_a' },
+    { id: 'chk_plan_b', key: 'd2c_snap_plan_b' },
+    { id: 'chk_plan_c', key: 'd2c_snap_plan_c' }
+  ];
+  
+  let validResults = [];
+  let validConfigs = [];
+
+  keys.forEach(k => {
+    if(document.getElementById(k.id).checked) {
+      const saved = localStorage.getItem(k.key);
+      if(saved) {
+        const data = JSON.parse(saved);
+        validConfigs.push(data);
+        validResults.push(runSimulationEngine(data));
+      }
+    }
+  });
+
+  if(validResults.length === 0) {
+    alert("統合するプランが選択されていないか、保存されていません。");
+    return;
+  }
+
+  // 統合（合算）処理
+  let intRes = { tProf:0, bep:0, peakMin:0, tRev:0, yearly:Array.from({length:5},()=>({rev:0,prof:0,new:0})), monthlyLog:Array.from({length:60},()=>({new:0,rep:0,rev:0,prof:0,cumProf:0})), monthlyCF:Array.from({length:24},()=>({flow:0,cumCF:0})), cfInflow:new Array(65).fill(0), cfOutflow:new Array(65).fill(0) };
+  
+  let cumCF = 0;
+  for(let m=0; m<60; m++) {
+    validResults.forEach(r => {
+      intRes.monthlyLog[m].new += r.monthlyLog[m].new;
+      intRes.monthlyLog[m].rep += r.monthlyLog[m].rep;
+      intRes.monthlyLog[m].rev += r.monthlyLog[m].rev;
+      intRes.monthlyLog[m].prof += r.monthlyLog[m].prof;
+      intRes.cfInflow[m] += r.cfInflow[m];
+      intRes.cfOutflow[m] += r.cfOutflow[m];
+    });
+    
+    intRes.tRev += intRes.monthlyLog[m].rev;
+    intRes.tProf += intRes.monthlyLog[m].prof;
+    intRes.monthlyLog[m].cumProf = intRes.tProf;
+    if(intRes.tProf > 0 && intRes.bep === 0) intRes.bep = m + 1;
+    
+    intRes.yearly[Math.floor(m/12)].rev += intRes.monthlyLog[m].rev;
+    intRes.yearly[Math.floor(m/12)].prof += intRes.monthlyLog[m].prof;
+    intRes.yearly[Math.floor(m/12)].new += intRes.monthlyLog[m].new;
+
+    let flow = intRes.cfInflow[m] - intRes.cfOutflow[m];
+    cumCF += flow;
+    if(cumCF < intRes.peakMin) intRes.peakMin = cumCF;
+    if(m < 24) { intRes.monthlyCF[m].flow = flow; intRes.monthlyCF[m].cumCF = cumCF; }
+  }
+
+  window.integratedStats = { res: intRes, individualResults: validResults, configs: validConfigs };
+  renderTables(intRes, "int_");
+}
+
+function saveIntegrationAsPlan() {
+  if(!window.integratedStats || window.integratedStats.configs.length === 0) return alert("先に統合計算を実行してください。");
+  const target = document.getElementById('int_save_target').value;
+  
+  // 重み付け平均ロジック (獲得人数で重み付け)
+  const configs = window.integratedStats.configs;
+  const results = window.integratedStats.individualResults;
+  
+  let totalUsersAll = 0, sumFixed = 0, wPrice = 0, wCpa = 0, wCost = 0;
+  
+  let newM = Array(25).fill(0);
+
+  configs.forEach((cfg, idx) => {
+    let tNew = results[idx].yearly.reduce((sum, y) => sum + y.new, 0);
+    totalUsersAll += tNew;
+    sumFixed += getNumFromData(cfg, 'fixed_cost', 0);
+    if(tNew > 0) {
+      wPrice += getNumFromData(cfg, 'f_price', 3000) * tNew;
+      wCpa += getNumFromData(cfg, 'cpa', 5000) * tNew;
+      wCost += getNumFromData(cfg, 'f_cost', 1600) * tNew;
+    }
+    for(let i=1; i<=24; i++) newM[i] += getNumFromData(cfg, `m${i}`, 0);
+  });
+
+  if(totalUsersAll > 0) { wPrice /= totalUsersAll; wCpa /= totalUsersAll; wCost /= totalUsersAll; }
+
+  // 新しいコンフィグを作成
+  let newConfig = Object.assign({}, configs[0]); // ベースコピー
+  newConfig.f_price = Math.round(wPrice); newConfig.r_price = Math.round(wPrice); // 簡単のため同じにする
+  newConfig.cpa = Math.round(wCpa);
+  newConfig.f_cost = Math.round(wCost); newConfig.r_cost = Math.round(wCost);
+  newConfig.fixed_cost = Math.round(sumFixed);
+  for(let i=1; i<=24; i++) newConfig[`m${i}`] = newM[i];
+  
+  // フラグ類リセット
+  newConfig.autoF2Mode = false; // 加重平均で計算が狂うので手動モード化
+
+  localStorage.setItem('d2c_snap_' + target, JSON.stringify(newConfig));
+  alert(`統合結果を ${target} に加重平均パラメータとして保存しました！\n※詳細な分析のために[単一プラン編集]タブで確認できます。`);
+}
+
+function runIntegrationAI() {
+  if(!window.integratedStats) return alert("先に統合計算を実行してください。");
+  const intRes = window.integratedStats.res;
+  const indRes = window.integratedStats.individualResults;
+
+  let sumIndividualPeaks = 0;
+  indRes.forEach(r => sumIndividualPeaks += r.peakMin);
+
+  let synergy = sumIndividualPeaks - intRes.peakMin; // マイナス値の差分 (例: -100 - (-80) = -20 つまり20浮いた)
+  
+  let comment = "";
+  if(synergy < -100000) {
+    comment = `【💰 ポートフォリオ効果あり】<br>各プランを単体で実行した場合の最大資金は合計 <strong>${Math.abs(sumIndividualPeaks).toLocaleString()}円</strong> ですが、統合によりキャッシュの凹みが相殺され、必要な資金を <strong>${Math.abs(intRes.peakMin).toLocaleString()}円</strong> に抑えられています。（約 ${Math.abs(synergy).toLocaleString()}円 のシナジー効果）`;
+  } else {
+    comment = `【⚠️ リスク集中に注意】<br>プラン同士でキャッシュアウトのタイミングが重なっており、相殺効果（シナジー）は発生していません。最大で <strong>${Math.abs(intRes.peakMin).toLocaleString()}円</strong> の資金投下が必要です。獲得開始月を意図的にズラすことで、ピーク資金を抑えられる可能性があります。`;
+  }
+
+  const evalBox = document.getElementById('ai_eval_int');
+  evalBox.style.display = "block";
+  evalBox.innerHTML = `
+    <div style="font-weight:bold; margin-bottom:10px; font-size:14px; color:#9b59b6;">🤖 統合ポートフォリオ AI 診断</div>
+    <div class="ai-comment" style="border-left-color:#9b59b6;">${comment}</div>
+  `;
+}
+
+// --- 単一プラン用AI評価 ---
 function runAIEvaluation() {
   const cpa = getVal('cpa'), ret2 = getVal('ret_2');
   const bep = window.simStats.bep || 999;
@@ -570,7 +663,6 @@ function runAIEvaluation() {
   const marginTolerance = window.simStats.margin;
 
   let totalScore = 0;
-  
   let e1 = bep <= 12 ? { s: 20, t: "◎ 優秀", m: "1年以内回収" } : (bep <= 24 ? { s: 10, t: "〇 標準", m: "2年以内回収" } : { s: 0, t: "△ 課題", m: "回収長期化" });
   let e2 = ret2 >= 85 ? { s: 20, t: "◎ 優秀", m: "極めて高い定着" } : (ret2 >= 75 ? { s: 10, t: "〇 標準", m: "標準的な定着水準" } : { s: 0, t: "△ 課題", m: "初期離脱リスク" });
   let e3 = profitMargin >= 15 ? { s: 20, t: "◎ 優秀", m: "高収益モデル" } : (profitMargin >= 5 ? { s: 10, t: "〇 標準", m: "利益創出可能" } : { s: 0, t: "△ 課題", m: "薄利多売・赤字" });
@@ -578,38 +670,14 @@ function runAIEvaluation() {
   let e5 = marginTolerance >= (cpa * 1.5) ? { s: 20, t: "◎ 優秀", m: "CPA高騰に強い" } : (marginTolerance >= cpa ? { s: 10, t: "〇 標準", m: "微増なら吸収可" } : { s: 0, t: "△ 課題", m: "悪化で即赤字化" });
 
   totalScore = e1.s + e2.s + e3.s + e4.s + e5.s;
-
-  let advice = "";
-  if(totalScore >= 80) {
-    advice = `獲得効率とLTVのバランスが良く、順調に利益が積み上がる非常に堅牢なモデルです。<br>初期のキャッシュアウト（${peak.toLocaleString()}円）も許容範囲内で、投資回収スピードも申し分ありません。<br>将来のCPA高騰リスクにも耐えうるため、強気の広告展開によるスケールアップを推奨します。`;
-  } else if(totalScore >= 50) {
-    advice = `2年目以降に利益が出る標準的なモデルですが、各指標に改善の余地が残されています。<br>ピーク時の必要資金（${peak.toLocaleString()}円）を自己資金でカバーできるか慎重に検討してください。<br>将来的なCPA高騰リスクに備え、商品単価の引き上げやCRMのさらなる強化が求められます。`;
-  } else {
-    advice = `キャッシュの燃焼が速すぎ、長期的な黒字化が非常に困難な危険なモデル設定です。<br>最大${peak.toLocaleString()}円の資金が必要となり、資金ショートのリスクが極めて高い状態です。<br>事業化の前に、原価率の圧縮・価格改定・根本的な継続率改善のいずれかを必ず実行してください。`;
-  }
+  let advice = totalScore >= 80 ? "獲得効率とLTVのバランスが良く、順調に利益が積み上がる非常に堅牢なモデルです。<br>初期のキャッシュアウトも許容範囲内で、投資回収スピードも申し分ありません。" : (totalScore >= 50 ? "2年目以降に利益が出る標準的なモデルですが、各指標に改善の余地が残されています。<br>ピーク時の必要資金を自己資金でカバーできるか慎重に検討してください。" : "キャッシュの燃焼が速すぎ、長期的な黒字化が非常に困難な危険なモデル設定です。<br>資金ショートのリスクが極めて高い状態です。");
 
   const evalBox = document.getElementById('ai_eval');
   evalBox.style.display = "block";
-  evalBox.innerHTML = `
-    <div style="font-weight:bold; margin-bottom:15px; font-size:14px;">🤖 経営シミュレーション AI 診断結果</div>
-    <div class="ai-score-board">
-      <div style="font-size:12px; color:#555;">総合スコア</div>
-      <div class="ai-score">${totalScore} / 100 点</div>
-    </div>
-    <div class="ai-metrics">
-      <div class="ai-metric-item"><span class="ai-metric-label">1. 投資回収スピード</span><span class="ai-metric-val" style="color:${e1.s>=10?'#27ae60':'#e74c3c'}">${e1.t} (${e1.m})</span></div>
-      <div class="ai-metric-item"><span class="ai-metric-label">2. 初期顧客定着率</span><span class="ai-metric-val" style="color:${e2.s>=10?'#27ae60':'#e74c3c'}">${e2.t} (${e2.m})</span></div>
-      <div class="ai-metric-item"><span class="ai-metric-label">3. 長期収益性</span><span class="ai-metric-val" style="color:${e3.s>=10?'#27ae60':'#e74c3c'}">${e3.t} (${e3.m})</span></div>
-      <div class="ai-metric-item"><span class="ai-metric-label">4. 資金効率</span><span class="ai-metric-val" style="color:${e4.s>=10?'#27ae60':'#f39c12'}">${e4.t} (${e4.m})</span></div>
-      <div class="ai-metric-item"><span class="ai-metric-label">5. CPA高騰耐性</span><span class="ai-metric-val" style="color:${e5.s>=10?'#27ae60':'#e74c3c'}">${e5.t} (${e5.m})</span></div>
-    </div>
-    <div class="ai-comment">
-      ${advice}
-    </div>
-  `;
+  evalBox.innerHTML = `<div style="font-weight:bold; margin-bottom:15px; font-size:14px;">🤖 経営シミュレーション AI 診断結果</div><div class="ai-score-board"><div style="font-size:12px; color:#555;">総合スコア</div><div class="ai-score">${totalScore} / 100 点</div></div><div class="ai-metrics"><div class="ai-metric-item"><span class="ai-metric-label">1. 投資回収スピード</span><span class="ai-metric-val" style="color:${e1.s>=10?'#27ae60':'#e74c3c'}">${e1.t} (${e1.m})</span></div><div class="ai-metric-item"><span class="ai-metric-label">2. 初期顧客定着率</span><span class="ai-metric-val" style="color:${e2.s>=10?'#27ae60':'#e74c3c'}">${e2.t} (${e2.m})</span></div><div class="ai-metric-item"><span class="ai-metric-label">3. 長期収益性</span><span class="ai-metric-val" style="color:${e3.s>=10?'#27ae60':'#e74c3c'}">${e3.t} (${e3.m})</span></div><div class="ai-metric-item"><span class="ai-metric-label">4. 資金効率</span><span class="ai-metric-val" style="color:${e4.s>=10?'#27ae60':'#f39c12'}">${e4.t} (${e4.m})</span></div><div class="ai-metric-item"><span class="ai-metric-label">5. CPA高騰耐性</span><span class="ai-metric-val" style="color:${e5.s>=10?'#27ae60':'#e74c3c'}">${e5.t} (${e5.m})</span></div></div><div class="ai-comment">${advice}</div>`;
 }
 
-function downloadCSV() {
+function downloadCSV(yTable, mTable, filename) {
   const getD = id => {
     let rs = [];
     document.getElementById(id).querySelectorAll('tr').forEach(tr => {
@@ -618,10 +686,9 @@ function downloadCSV() {
     });
     return rs;
   };
-  let csv = ["--- SUMMARY ---"].concat(getD('yearly_table')).concat(["", "--- DETAILS ---"]).concat(getD('monthly_table')).join("\r\n");
-  const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-  const blob = new Blob([bom, csv], { type: 'text/csv' });
-  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "d2c_strategy_report.csv"; a.click();
+  let csv = ["--- SUMMARY ---"].concat(getD(yTable)).concat(["", "--- DETAILS ---"]).concat(getD(mTable)).join("\r\n");
+  const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv' });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
 }
 
 window.onload = () => {
