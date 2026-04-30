@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>D2C Strategy Dashboard - Pro V4</title>
+  <title>D2C Strategy Dashboard - Pro V5</title>
   <style>
     :root {
       --primary: #2c3e50; --accent: #3498db; --success: #27ae60;
@@ -16,7 +16,7 @@
     
     .container { max-width: 1300px; margin: 0 auto; display: flex; align-items: flex-start; gap: 20px; }
     .main-content { flex: 1; min-width: 0; }
-    .sidebar { flex: 0 0 340px; position: sticky; top: 20px; }
+    .sidebar { flex: 0 0 340px; position: sticky; top: 20px; z-index: 100;}
     
     .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; border-top: 4px solid var(--accent); }
     .card h3 { margin-top: 0; font-size: 16px; display: flex; align-items: center; gap: 8px; color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 10px; }
@@ -66,8 +66,10 @@
     .ai-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 15px; }
     .ai-metric-item { background: #fff; padding: 8px 12px; border-radius: 6px; border: 1px solid #eee; display: flex; justify-content: space-between; }
     .ai-metric-label { font-weight: bold; color: #555; }
-    .ai-metric-val { font-weight: bold; }
     .ai-comment { font-size: 14px; color: #333; padding: 10px; background: #fff; border-left: 4px solid #6c5ce7; border-radius: 4px; }
+
+    /* Model Setup Box */
+    .model-setup { grid-column: 1 / -1; background: #fdfdfd; padding: 12px; border-radius: 8px; border: 1px dashed #b2bec3; margin-bottom: 10px; }
 
     @media (max-width: 900px) {
       .container { flex-direction: column-reverse; }
@@ -99,14 +101,28 @@
     <div class="card">
       <h3>🛒 販売・単価・CPA</h3>
       <div class="form-grid">
+        
+        <div class="model-setup">
+          <label style="color: var(--primary); font-weight:bold; font-size:12px; display:block; margin-bottom:8px;">🛠 F2転換率算出モデル設定</label>
+          <div style="display:flex; flex-wrap:wrap; gap:15px; font-size:13px; margin-bottom: 10px;">
+            <label><input type="radio" name="category" id="cat_hair" value="0.65" checked onchange="updateAutoF2UI(); calculate();"> ヘアケア (感度0.65)</label>
+            <label><input type="radio" name="category" id="cat_skin" value="0.7" onchange="updateAutoF2UI(); calculate();"> スキンケア (感度0.70)</label>
+            <label><input type="radio" name="category" id="cat_other" value="0.5" onchange="updateAutoF2UI(); calculate();"> その他 (感度0.50)</label>
+          </div>
+          <label class="checkbox-label" style="font-weight:bold; color:var(--primary);">
+            <input type="checkbox" id="brand_power" onchange="updateAutoF2UI(); calculate();" style="transform: scale(1.2); margin-right:5px;"> 注力中既存ブランドでスタート (ベース値一律55%)
+          </label>
+          <div style="font-size:10px; color:#7f8c8d; margin-left:24px; margin-top:4px;">※未チェック時はブランド成長を考慮し、1年目45%、2〜3年目52%、4年目以降55%で自動補正されます。</div>
+        </div>
+
         <div class="form-group">
           <label>初回販売価格(円)</label>
-          <input type="text" inputmode="numeric" class="num-input" id="f_price" value="3,000">
-          <label class="checkbox-label"><input type="checkbox" id="sync_price" checked>定期も同一</label>
+          <input type="text" inputmode="numeric" class="num-input" id="f_price" value="1,980">
+          <label class="checkbox-label"><input type="checkbox" id="sync_price">定期も同一</label>
         </div>
         <div class="form-group">
           <label>定期販売価格(円)</label>
-          <input type="text" inputmode="numeric" class="num-input" id="r_price" value="3,000" disabled>
+          <input type="text" inputmode="numeric" class="num-input" id="r_price" value="4,950">
         </div>
         <div class="form-group">
           <label>初回変動費(円/個)</label>
@@ -117,9 +133,10 @@
           <label>新規獲得CPA(円)</label>
           <input type="text" inputmode="numeric" class="num-input" id="cpa" value="5,000">
         </div>
+        
         <div class="form-group">
-          <label>2回目継続率(%)</label>
-          <input type="number" id="ret_2" value="82.0" step="0.1">
+          <label>2回目継続率(%) <span id="f2_status" style="font-weight:normal; font-size:10px; color:var(--success); margin-left:5px;">[自動算出]</span></label>
+          <input type="number" id="ret_2" value="82.0" step="0.1" oninput="setAutoF2(false)">
         </div>
       </div>
     </div>
@@ -138,7 +155,7 @@
           <div class="form-group"><label>4回目継続率(%)</label><input type="number" id="ret_4" value="75.0" step="0.1"></div>
           
           <div style="grid-column: 1 / -1; display: flex; justify-content: flex-end; margin-top: -5px; margin-bottom: 5px;">
-            <button onclick="resetRetention()" style="background:transparent; border:1px solid #ccc; color:#7f8c8d; width:auto; font-size:11px; padding:4px 12px; border-radius:4px; box-shadow:none;">↺ 継続率をデフォルトに戻す (82% / 81% / 75%)</button>
+            <button onclick="resetRetention()" style="background:transparent; border:1px solid #ccc; color:#7f8c8d; width:auto; font-size:11px; padding:4px 12px; border-radius:4px;">↺ 価格倍率からF2自動算出に戻す (3・4回目も初期値へ)</button>
           </div>
 
           <div class="form-group">
@@ -268,6 +285,38 @@ function getVal(id) {
 
 const masterRet = [100, 82, 81, 75, 85, 95, 95.25, 95.5, 95.75, 96, 96.25, 96.5, 95.76, 95.02, 94.28, 93.54, 92.8, 92.06, 91.41, 90.75, 90.1, 89.44, 88.79, 88.13, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.58, 91.57, 91.57, 91.57, 91.58, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5, 92.5];
 
+// === F2自動算出モデル関連のステート ===
+let autoF2Mode = true;
+
+function setAutoF2(isAuto) {
+  autoF2Mode = isAuto;
+  const statusEl = document.getElementById('f2_status');
+  if(isAuto) {
+    statusEl.innerText = "[自動算出]";
+    statusEl.style.color = "var(--success)";
+    updateAutoF2UI();
+  } else {
+    statusEl.innerText = "[手動設定]";
+    statusEl.style.color = "var(--warning)";
+  }
+}
+
+function updateAutoF2UI() {
+  if(!autoF2Mode) return;
+  const p1 = Math.max(1, getVal('f_price'));
+  const p2 = Math.max(1, getVal('r_price'));
+  const alpha = Number(document.querySelector('input[name="category"]:checked').value);
+  const isExisting = document.getElementById('brand_power').checked;
+  
+  // UI上には1年目のベース(45)か、チェックありのベース(55)を表示
+  const c_base = isExisting ? 55 : 45; 
+  let f2 = c_base * Math.pow(p2 / p1, -alpha);
+  f2 = Math.max(f2, 10.0);
+  
+  document.getElementById('ret_2').value = f2.toFixed(1);
+}
+
+// 月次枠生成
 const container = document.getElementById('months_container');
 const m_header = document.getElementById('m_header');
 for(let i=1; i<=24; i++){
@@ -286,10 +335,13 @@ function setupSync() {
         elR.disabled = true; 
       } else { 
         elR.disabled = false; 
-      } 
+      }
+      if(f === 'f_price' || r === 'r_price') updateAutoF2UI();
     };
     elF.addEventListener('input', sync); 
     elF.addEventListener('focusout', sync); 
+    elR.addEventListener('input', () => { updateAutoF2UI(); });
+    elR.addEventListener('focusout', () => { updateAutoF2UI(); });
     elS.addEventListener('change', sync); 
     sync();
   });
@@ -302,11 +354,11 @@ function toggleCFInput() {
   fields.style.pointerEvents = custom ? "auto" : "none";
 }
 
-// 継続率リセット
+// 継続率リセット（オートモード復活）
 function resetRetention() {
-  document.getElementById('ret_2').value = 82.0;
   document.getElementById('ret_3').value = 81.0;
   document.getElementById('ret_4').value = 75.0;
+  setAutoF2(true);
   calculate();
 }
 
@@ -345,13 +397,16 @@ function distribute(amount, delayDays, targetArray, startMonth) {
 window.simStats = {};
 
 function calculate() {
-  const f_p = getVal('f_price'), f_q = getVal('f_qty');
-  const r_p = getVal('r_price'), r_q = getVal('r_qty');
+  const p1 = Math.max(1, getVal('f_price'));
+  const p2 = Math.max(1, getVal('r_price'));
+  const f_q = getVal('f_qty'), r_q = getVal('r_qty');
   const cpa = getVal('cpa'), f_c = getVal('f_cost'), r_c = getVal('r_cost');
   const crm = getVal('crm_rate') / 100, fixed = getVal('fixed_cost');
+  const alpha = Number(document.querySelector('input[name="category"]:checked').value);
+  const isExisting = document.getElementById('brand_power').checked;
   
   let curRet = [...masterRet];
-  curRet[1] = getVal('ret_2'); curRet[2] = getVal('ret_3'); curRet[3] = getVal('ret_4');
+  curRet[2] = getVal('ret_3'); curRet[3] = getVal('ret_4');
   
   let newUsers = []; let totalNew = 0;
   for(let i=1; i<=24; i++){ let v = getVal(`m${i}`); newUsers.push(v); totalNew += v; }
@@ -371,12 +426,34 @@ function calculate() {
 
   for(let m=0; m<60; m++){
     let curNew = newUsers[m], curRep = 0;
+    
     for(let p=0; p<m; p++){
+      // 動的F2計算ロジック (コホート獲得月 p に依存)
+      let f2_rate;
+      if (!autoF2Mode) {
+        f2_rate = getVal('ret_2');
+      } else {
+        let c_base = 45;
+        if (isExisting) {
+          c_base = 55;
+        } else {
+          if (p >= 36) c_base = 55;
+          else if (p >= 12) c_base = 52;
+          else c_base = 45;
+        }
+        let calc_f2 = c_base * Math.pow(p2 / p1, -alpha);
+        f2_rate = Math.max(calc_f2, 10.0);
+      }
+      
       let surv = newUsers[p];
-      for(let s=1; s<=(m-p); s++) surv *= (curRet[Math.min(s, 59)]/100);
+      for(let s=1; s<=(m-p); s++) {
+        let retRate = (s === 1) ? f2_rate : curRet[Math.min(s, 59)];
+        surv *= (retRate/100);
+      }
       curRep += surv;
     }
-    let rev = (curNew * f_p) + (curRep * r_p);
+    
+    let rev = (curNew * p1) + (curRep * p2);
     let cost = (curNew * f_q * f_c) + (curRep * r_q * r_c);
     let ad = curNew * cpa;
     let prof = rev - cost - ad - (rev * crm) - fixed;
@@ -401,8 +478,7 @@ function calculate() {
     if(m < 24) monthlyCF.push({ flow, cumCF });
   }
 
-  // AI用に保存
-  window.simStats = { bep: bep, peakMin: peakMin, tProf: tProf, tRev: tRev, margin: (f_p - (f_q * f_c)) + ((r_p - (r_q * r_c)) * 3) };
+  window.simStats = { bep: bep, peakMin: peakMin, tProf: tProf, tRev: tRev, margin: (p1 - (f_q * f_c)) + ((p2 - (r_q * r_c)) * 3) };
 
   const fmt = n => Math.round(n).toLocaleString();
   document.getElementById('res_y5').innerText = "¥" + fmt(tProf);
@@ -447,7 +523,7 @@ function calculate() {
 
 function getFormData() {
   const inputs = document.querySelectorAll('input.num-input, input[type="number"], input[type="checkbox"], input[type="radio"]:checked');
-  const data = {};
+  const data = { autoF2Mode: autoF2Mode };
   inputs.forEach(el => {
     if(el.type === 'checkbox' || el.type === 'radio') data[el.id] = el.checked;
     else data[el.id] = el.value.replace(/,/g, '');
@@ -461,12 +537,14 @@ function loadConfig(configStr) {
   if(!configStr) return;
   const data = JSON.parse(configStr);
   Object.keys(data).forEach(id => {
+    if(id === 'autoF2Mode') return;
     const el = document.getElementById(id);
     if(el) {
       if(el.type === 'checkbox' || el.type === 'radio') el.checked = data[id];
       else el.value = el.classList.contains('num-input') && data[id] !== '' ? Number(data[id]).toLocaleString() : data[id];
     }
   });
+  if(data.autoF2Mode !== undefined) setAutoF2(data.autoF2Mode);
   setupSync(); toggleCFInput();
 }
 
